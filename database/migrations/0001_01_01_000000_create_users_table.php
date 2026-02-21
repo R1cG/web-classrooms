@@ -12,9 +12,18 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('email')->unique();
+
+            //Atributos nuevos - agregados - modificados
+
+            $table->string('cedula', 9)->primary();
+            $table->string('nombre', 30);
+            $table->string('apellido', 30);
+            $table->string('rol', 1)->default('E'); // E: Estudiante, P: Profesor, A: Administrador
+            $table->date('fecha_nacimiento')->nullable();
+
+            //Atributos viejos - por defecto
+
+            $table->string('email', 254)->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();
@@ -29,7 +38,7 @@ return new class extends Migration
 
         Schema::create('sessions', function (Blueprint $table) {
             $table->string('id')->primary();
-            $table->foreignId('user_id')->nullable()->index();
+            $table->string('user_id', 9)->index()->nullable();
             $table->string('ip_address', 45)->nullable();
             $table->text('user_agent')->nullable();
             $table->longText('payload');

@@ -32,7 +32,6 @@ export default function Index() {
             <Head title="Crear Materia Nueva" />
             <div className='w-8/12 p-4'>
                 <form onSubmit={hadleSubmit} className='space-y-4'>
-                    @csrf
                     {/*Mostrar errores de validacion*/}
                     {Object.keys(errors).length > 0 && (
                         <div className='text-red-500'>

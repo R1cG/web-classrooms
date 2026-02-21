@@ -16,6 +16,7 @@ export default function Register() {
             description="Enter your details below to create your account"
         >
             <Head title="Register" />
+
             <Form
                 {...store.form()}
                 resetOnSuccess={['password', 'password_confirmation']}
@@ -25,76 +26,115 @@ export default function Register() {
                 {({ processing, errors }) => (
                     <>
                         <div className="grid gap-6">
+
+                            {/* Cedula */}
                             <div className="grid gap-2">
-                                <Label htmlFor="name">Name</Label>
+                                <Label htmlFor="cedula">Cédula</Label>
                                 <Input
-                                    id="name"
+                                    id="cedula"
+                                    name="cedula"
                                     type="text"
                                     required
-                                    autoFocus
-                                    tabIndex={1}
-                                    autoComplete="name"
-                                    name="name"
-                                    placeholder="Full name"
+                                    maxLength={9}
                                 />
-                                <InputError
-                                    message={errors.name}
-                                    className="mt-2"
-                                />
+                                <InputError message={errors.cedula} />
                             </div>
 
+                            {/* Nombre */}
                             <div className="grid gap-2">
-                                <Label htmlFor="email">Email address</Label>
+                                <Label htmlFor="nombre">Nombre</Label>
+                                <Input
+                                    id="nombre"
+                                    name="nombre"
+                                    type="text"
+                                    required
+                                    maxLength={30}
+                                />
+                                <InputError message={errors.nombre} />
+                            </div>
+
+                            {/* Apellido */}
+                            <div className="grid gap-2">
+                                <Label htmlFor="apellido">Apellido</Label>
+                                <Input
+                                    id="apellido"
+                                    name="apellido"
+                                    type="text"
+                                    required
+                                    maxLength={30}
+                                />
+                                <InputError message={errors.apellido} />
+                            </div>
+
+                            {/* Fecha nacimiento */}
+                            <div className="grid gap-2">
+                                <Label htmlFor="fecha_nacimiento">
+                                    Fecha de nacimiento
+                                </Label>
+                                <Input
+                                    id="fecha_nacimiento"
+                                    name="fecha_nacimiento"
+                                    type="date"
+                                />
+                                <InputError message={errors.fecha_nacimiento} />
+                            </div>
+
+                            {/* Rol */}
+                            <div className="grid gap-2">
+                                <Label htmlFor="rol">Rol</Label>
+                                <select
+                                    id="rol"
+                                    name="rol"
+                                    required
+                                    className="border rounded-md p-2 bg-background"
+                                >
+                                    <option value="">Select role</option>
+                                    <option value="A">Admin</option>
+                                    <option value="E">Estudiante</option>
+                                    <option value="P">Profesor</option>
+                                </select>
+                                <InputError message={errors.rol} />
+                            </div>
+
+                            {/* Email */}
+                            <div className="grid gap-2">
+                                <Label htmlFor="email">Email</Label>
                                 <Input
                                     id="email"
+                                    name="email"
                                     type="email"
                                     required
-                                    tabIndex={2}
-                                    autoComplete="email"
-                                    name="email"
-                                    placeholder="email@example.com"
                                 />
                                 <InputError message={errors.email} />
                             </div>
 
+                            {/* Password */}
                             <div className="grid gap-2">
                                 <Label htmlFor="password">Password</Label>
                                 <Input
                                     id="password"
+                                    name="password"
                                     type="password"
                                     required
-                                    tabIndex={3}
-                                    autoComplete="new-password"
-                                    name="password"
-                                    placeholder="Password"
                                 />
                                 <InputError message={errors.password} />
                             </div>
 
+                            {/* Confirm Password */}
                             <div className="grid gap-2">
                                 <Label htmlFor="password_confirmation">
                                     Confirm password
                                 </Label>
                                 <Input
                                     id="password_confirmation"
+                                    name="password_confirmation"
                                     type="password"
                                     required
-                                    tabIndex={4}
-                                    autoComplete="new-password"
-                                    name="password_confirmation"
-                                    placeholder="Confirm password"
                                 />
-                                <InputError
-                                    message={errors.password_confirmation}
-                                />
+                                <InputError message={errors.password_confirmation} />
                             </div>
 
-                            <Button
-                                type="submit"
-                                className="mt-2 w-full"
-                                tabIndex={5}
-                                data-test="register-user-button"
-                            >
+                            <Button type="submit" className="mt-2 w-full">
                                 {processing && <Spinner />}
                                 Create account
                             </Button>
@@ -102,7 +142,7 @@ export default function Register() {
 
                         <div className="text-center text-sm text-muted-foreground">
                             Already have an account?{' '}
-                            <TextLink href={login()} tabIndex={6}>
+                            <TextLink href={login()}>
                                 Log in
                             </TextLink>
                         </div>

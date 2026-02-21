@@ -25,9 +25,14 @@ class CreateNewUser implements CreatesNewUsers
         ])->validate();
 
         return User::create([
-            'name' => $input['name'],
+            //Se modifico para coincidir con los nuevos atributos de la tabla users
             'email' => $input['email'],
             'password' => $input['password'],
+            'cedula' => $input['cedula'],
+            'nombre' => $input['nombre'],
+            'apellido' => $input['apellido'],
+            'rol' => $input['rol'],
+            'fecha_nacimiento' => $input['fecha_nacimiento'],
         ]);
     }
 }

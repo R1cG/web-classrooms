@@ -18,8 +18,21 @@ class User extends Authenticatable
      *
      * @var list<string>
      */
+
+    //Se modifico el sistema convencional de Laravel para crear usuarios,
+    //ahora se usa cedula como llave primaria, por lo que se debe modificar
+    //el sistema de creacion y autentificacion
+
+    protected $primaryKey = 'cedula';
+    public $incrementing = false;
+    protected $keyType = 'string';
+
     protected $fillable = [
-        'name',
+        'cedula',
+        'nombre',
+        'apellido',
+        'rol',
+        'fecha_nacimiento',
         'email',
         'password',
     ];
@@ -48,5 +61,11 @@ class User extends Authenticatable
             'password' => 'hashed',
             'two_factor_confirmed_at' => 'datetime',
         ];
+    }
+
+    //Modificacion del getName para asegurar si funciona el dashboard
+    public function getNameAttribute(): string
+    {
+        return $this->nombre . ' ' . $this->apellido;
     }
 }

@@ -18,7 +18,7 @@ class MateriaController extends Controller
 
     public function create()
     {
-        return Inertia::render('administrador/materias/create', []);
+        return Inertia::render(component: 'administrador/materias/create');
     }
 
     public function store(Request $request)
