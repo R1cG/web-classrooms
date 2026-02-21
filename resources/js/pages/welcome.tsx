@@ -538,7 +538,7 @@ export default function Welcome({
                             aprendizaje <em>virtual</em>
                         </h1>
                         <p className="hero-desc">
-                            Plataforma de aulas virtuales del Departamento de Computación y Sistemas.
+                            Plataforma de aulas virtuales.
                             Gestiona evaluaciones, consulta documentación y sigue tu progreso académico
                             desde un solo lugar.
                         </p>
@@ -561,7 +561,7 @@ export default function Welcome({
                             )}
                         </div>
                         <p className="hero-note">
-                            Ingresa con tu cédula de identidad y contraseña registrada.
+                            Ingresa con tu correo y contraseña registrada.
                         </p>
                     </div>
 
