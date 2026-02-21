@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\MateriaController;
+use App\Http\Controllers\UsuarioController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
@@ -32,6 +33,25 @@ Route::get('/materias/{materia}/editar', [MateriaController::class, 'edit'
 
 Route::put('/materias/{materia}', [MateriaController::class, 'update'
 ])->middleware(['auth', 'verified'])->name('materiasUpdate');
+
+Route::get('/usuarios', [UsuarioController::class, 'index']
+)->middleware(['auth', 'verified'])->name('usuariosIndex');
+
+Route::get('/usuarios/crear', [UsuarioController::class, 'create'
+])->middleware(['auth', 'verified'])->name('usuariosCreate');
+
+Route::post('/usuarios', [UsuarioController::class, 'store'
+])->middleware(['auth', 'verified'])->name('usuariosStore');
+
+Route::delete('/usuarios/{cedula}', [UsuarioController::class, 'destroy'
+])->middleware(['auth', 'verified'])->name('usuariosDestroy');
+
+Route::get('/usuarios/{usuario}/editar', [UsuarioController::class, 'edit'
+])->middleware(['auth', 'verified'])->name('usuariosEdit');
+
+Route::put('/usuarios/{usuario}', [UsuarioController::class, 'update'
+])->middleware(['auth', 'verified'])->name('usuariosUpdate');
+
 
 
 require __DIR__.'/settings.php';
