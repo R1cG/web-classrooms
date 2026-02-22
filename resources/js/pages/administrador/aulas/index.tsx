@@ -40,6 +40,7 @@ interface Aula {
     materia_codigo: string;
     profesor: Profesor;
     materia: Materia;
+    cantidad_estudiantes: number;
 }
 
 interface PageProps {
@@ -89,6 +90,7 @@ export default function Index() {
                                 <TableHead>Materia</TableHead>
                                 <TableHead>Profesor</TableHead>
                                 <TableHead>Cédula Profesor</TableHead>
+                                <TableHead>Estudiantes</TableHead>
                                 <TableHead className="text-right">Acción</TableHead>
                             </TableRow>
                         </TableHeader>
@@ -102,6 +104,7 @@ export default function Index() {
                                         {aula.profesor?.nombre} {aula.profesor?.apellido}
                                     </TableCell>
                                     <TableCell>{aula.profesor?.cedula}</TableCell>
+                                    <TableCell>{aula.cantidad_estudiantes}</TableCell>
                                     <TableCell className="text-right space-x-2">
                                         <Link href={aulasEdit(aula.id).url}>
                                             <Button disabled={processing} className='bg-blue-500 hover:bg-blue-700'>
