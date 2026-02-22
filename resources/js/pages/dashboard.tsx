@@ -80,10 +80,10 @@ export default function Dashboard() {
                         <div>
                             <p className="text-slate-400 text-xs uppercase tracking-widest font-medium">Bienvenido de vuelta</p>
                             <h1 className="text-white text-2xl font-black leading-tight" style={{ fontFamily: "'Playfair Display', serif" }}>
-                                {user?.nombre} {user?.apellido}
+                                {(typeof user?.nombre === 'string' ? user?.nombre : '')} {(typeof user?.apellido === 'string' ? user?.apellido : '')}
                             </h1>
-                            <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-0.5 rounded-full border mt-1 ${rolColor[user?.rol ?? 'E']}`}>
-                                {rolLabel[user?.rol ?? 'E'] ?? 'Usuario'}
+                            <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-0.5 rounded-full border mt-1 ${rolColor[typeof user?.rol === 'string' ? user.rol : 'E']}`}>
+                                {rolLabel[typeof user?.rol === 'string' ? user.rol : 'E'] ?? 'Usuario'}
                             </span>
                         </div>
                     </div>
