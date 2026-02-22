@@ -12,7 +12,10 @@ class AulaController extends Controller
 {
     public function index()
     {
-        $aulas = Aula::with(['materia', 'profesor'])->get();
+        $aulas = Aula::with(['materia', 'profesor'])->
+        withCount('estudiantes as cantidad_estudiantes')->get();
+
+
         return Inertia::render('administrador/aulas/index', compact('aulas'));
     }
 

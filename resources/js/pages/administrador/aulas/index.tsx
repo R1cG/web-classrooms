@@ -32,7 +32,7 @@ interface Aula {
     materia_codigo: string;
     profesor: Profesor;
     materia: Materia;
-    estudiantes_count?: number; // Añadimos este campo opcional
+    cantidad_estudiantes: number;
 }
 
 interface PageProps {
@@ -168,7 +168,7 @@ export default function Index() {
                                                 <div className="flex items-center gap-2">
                                                     <Users size={14} className="text-slate-400" />
                                                     <span className="text-sm text-slate-600">
-                                                        <span className="font-semibold text-[#f59e0b]">{aula.estudiantes_count || 0}</span> estudiantes
+                                                        <span className="font-semibold text-[#f59e0b]">{aula.cantidad_estudiantes || 0}</span> estudiantes
                                                     </span>
                                                 </div>
                                                 <div className="flex items-center gap-1">
