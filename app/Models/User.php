@@ -68,4 +68,10 @@ class User extends Authenticatable
     {
         return $this->nombre . ' ' . $this->apellido;
     }
+
+    //relacion con aulas
+    public function aulas()
+    {
+        return $this->belongsToMany(Aula::class, 'aula_usuario', 'usuario_cedula', 'aula_id')->using(Incripcion::class);
+    }
 }

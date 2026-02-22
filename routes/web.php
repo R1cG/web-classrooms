@@ -5,6 +5,7 @@ use App\Http\Controllers\UsuarioController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
+use App\Http\Controllers\AulaController;
 
 Route::get('/', function () {
     return Inertia::render('welcome', [
@@ -51,6 +52,25 @@ Route::get('/usuarios/{usuario}/editar', [UsuarioController::class, 'edit'
 
 Route::put('/usuarios/{usuario}', [UsuarioController::class, 'update'
 ])->middleware(['auth', 'verified'])->name('usuariosUpdate');
+
+Route::get('/aulas', [AulaController::class, 'index']
+)->middleware(['auth', 'verified'])->name('aulasIndex');
+
+Route::get('/aulas/crear', [AulaController::class, 'create']
+)->middleware(['auth', 'verified'])->name('aulasCreate');
+
+Route::post('/aulas', [AulaController::class, 'store']
+)->middleware(['auth', 'verified'])->name('aulasStore');
+Route::delete('/aulas/{id}', [AulaController::class, 'destroy']
+)->middleware(['auth', 'verified'])->name('aulasDestroy');
+
+Route::get('/aulas/{aula}/editar', [AulaController::class, 'edit']
+)->middleware(['auth', 'verified'])->name('aulasEdit');
+
+Route::put('/aulas/{aula}', [AulaController::class, 'update']
+)->middleware(['auth', 'verified'])->name('aulasUpdate');
+
+
 
 
 

@@ -24,7 +24,11 @@ class UserFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => fake()->name(),
+            'nombre' => fake()->name(),
+            'apellido' => fake()->lastName(),
+            'cedula' => fake()->unique()->numerify('#########'),
+            'rol' => fake()->randomElement(['E', 'P']),
+            'fecha_nacimiento' => fake()->date(),
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
@@ -33,6 +37,20 @@ class UserFactory extends Factory
             'two_factor_recovery_codes' => null,
             'two_factor_confirmed_at' => null,
         ];
+    }
+
+    public function profesor(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'rol' => 'P',
+        ]);
+    }
+
+    public function estudiante(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'rol' => 'E',
+        ]);
     }
 
     /**
