@@ -12,15 +12,39 @@ class AulaController extends Controller
 {
     public function index()
     {
-        $aulas = Aula::with(['materia', 'profesor'])->
-        withCount('estudiantes as cantidad_estudiantes')->get();
+
+        $user = auth()->user();
+
+        if($user->rol === 'A') {
+            $aulas = Aula::with(['materia', 'profesor'])->
+            withCount('estudiantes as cantidad_estudiantes')->get();
+            $directory = 'administrador';
+        } else if($user->rol === 'P') {
+            $aulas = Aula::with(['materia', 'profesor'])->
+            withCount('estudiantes as cantidad_estudiantes')
+            ->where('profesor_cedula', $user->cedula)
+            ->get();
+            $directory = 'profesor';
+        } else if($user->rol === 'E') {
+            $aulas = $user->aulas()->with(['materia', 'profesor'])->get();
+            $directory = 'estudiante';
+        } else {
+            abort(403, 'Acceso no autorizado');
+        }
 
 
-        return Inertia::render('administrador/aulas/index', compact('aulas'));
+        return Inertia::render($directory . '/aulas/index', compact('aulas'));
     }
 
     public function create()
 {
+
+    $user = auth()->user();
+
+    if ($user->rol !== 'A') {
+        abort(403, 'Acceso no autorizado');
+    }
+
     // Professors
     $profesores = User::where('rol', 'P')
         ->select('cedula', 'nombre', 'apellido')
@@ -43,6 +67,12 @@ class AulaController extends Controller
 
     public function store(Request $request)
     {
+
+    $user = auth()->user();
+
+    if ($user->rol !== 'A') {
+        abort(403, 'Acceso no autorizado');
+    }
         $request->validate([
             'semestre' => ['required', 'string', 'max:10'],
             'materia_codigo' => ['required', 'exists:materias,codigo'],
@@ -69,6 +99,12 @@ class AulaController extends Controller
     public function edit(Aula $aula)
     {
 
+    $user = auth()->user();
+
+    if ($user->rol !== 'A') {
+        abort(403, 'Acceso no autorizado');
+    }
+
         $aula->load(['materia', 
         'profesor:cedula,nombre,apellido', 
         'estudiantes:cedula,nombre,apellido']);
@@ -93,6 +129,12 @@ class AulaController extends Controller
 
     public function update(Request $request, Aula $aula)
     {
+
+    $user = auth()->user();
+
+    if ($user->rol !== 'A') {
+        abort(403, 'Acceso no autorizado');
+    }
         $request->validate([
             'estudiantes' => ['nullable', 'array'],
             'estudiantes.*' => ['exists:users,cedula'],
@@ -105,6 +147,12 @@ class AulaController extends Controller
 
     public function destroy($id)
     {
+
+    $user = auth()->user();
+
+    if ($user->rol !== 'A') {
+        abort(403, 'Acceso no autorizado');
+    }
         $aula = Aula::findOrFail($id);
         $aula->delete();
 

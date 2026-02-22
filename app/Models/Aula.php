@@ -24,7 +24,8 @@ class Aula extends Model
     }
 
     //Relacion con profesor
-    public function profesor(){
+    public function profesor()
+    {
         return $this->belongsTo(User::class, 'profesor_cedula', 'cedula');
     }
 
@@ -32,10 +33,10 @@ class Aula extends Model
     {
         return $this->belongsToMany(
             User::class,
-            'aula_usuario', 
-            'aula_id', 
+            'aula_usuario',
+            'aula_id',
             'usuario_cedula'
-            )->using(Incripcion::class)
+        )->using(Incripcion::class)
             ->withPivot('aula_id', 'usuario_cedula');
     }
 }

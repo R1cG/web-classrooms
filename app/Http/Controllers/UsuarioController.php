@@ -12,6 +12,12 @@ class UsuarioController extends Controller
     //funcion para tener indice de los usuarios, un listado
     public function index()
     {
+        $user = auth()->user();
+
+        if ($user->rol !== 'A') {
+            abort(403, 'Acceso no autorizado');
+        }
+
         //Obtener todos los usuarios
         $usuarios = User::all();
 
@@ -21,50 +27,68 @@ class UsuarioController extends Controller
 
     public function create()
     {
+        $user = auth()->user();
+
+        if ($user->rol !== 'A') {
+            abort(403, 'Acceso no autorizado');
+        }
+
         return Inertia::render(component: 'administrador/usuarios/create');
     }
 
     public function store(Request $request)
-{
-    $validated = $request->validate([
-        'cedula' => ['required', 'max_digits:9', 'unique:users,cedula'],
-        'nombre' => ['required', 'string', 'max:30'],
-        'apellido' => ['required', 'string', 'max:30'],
-        'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
-        'password' => ['required', 'string', 'min:8'],
-        'rol' => ['required', 'string', 'in:administrador,profesor,estudiante, Estudiante, Profesor, Administrador,p,a,e,A,P,E'],
-        'fecha_nacimiento' => ['required', 'date'],
-    ]);
+    {
+        $user = auth()->user();
 
-    // Normalize role (convert full names to letters)
-    $roleMap = [
-        'administrador' => 'A',
-        'profesor' => 'P',
-        'estudiante' => 'E',
-        'Estudiante' => 'E',
-        'Profesor' => 'P',
-        'Administrador' => 'A',
-        'a' => 'A',
-        'p' => 'P',
-        'e' => 'E',
-        'A' => 'A',
-        'P' => 'P',
-        'E' => 'E',
-    ];
+        if ($user->rol !== 'A') {
+            abort(403, 'Acceso no autorizado');
+        }
 
-    $validated['rol'] = $roleMap[$validated['rol']];
+        $validated = $request->validate([
+            'cedula' => ['required', 'max_digits:9', 'unique:users,cedula'],
+            'nombre' => ['required', 'string', 'max:30'],
+            'apellido' => ['required', 'string', 'max:30'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
+            'password' => ['required', 'string', 'min:8'],
+            'rol' => ['required', 'string', 'in:administrador,profesor,estudiante, Estudiante, Profesor, Administrador,p,a,e,A,P,E'],
+            'fecha_nacimiento' => ['required', 'date'],
+        ]);
 
-    $validated['password'] = Hash::make($validated['password']);
+        // Normalize role (convert full names to letters)
+        $roleMap = [
+            'administrador' => 'A',
+            'profesor' => 'P',
+            'estudiante' => 'E',
+            'Estudiante' => 'E',
+            'Profesor' => 'P',
+            'Administrador' => 'A',
+            'a' => 'A',
+            'p' => 'P',
+            'e' => 'E',
+            'A' => 'A',
+            'P' => 'P',
+            'E' => 'E',
+        ];
 
-    User::create($validated);
+        $validated['rol'] = $roleMap[$validated['rol']];
 
-    return redirect()
-        ->route('usuariosIndex')
-        ->with('message', 'Usuario creado exitosamente.');
-}
+        $validated['password'] = Hash::make($validated['password']);
+
+        User::create($validated);
+
+        return redirect()
+            ->route('usuariosIndex')
+            ->with('message', 'Usuario creado exitosamente.');
+    }
 
     public function destroy($cedula)
     {
+        $user = auth()->user();
+
+        if ($user->rol !== 'A') {
+            abort(403, 'Acceso no autorizado');
+        }
+
         $usuario = User::findOrFail($cedula);
         $usuario->delete();
 
@@ -73,11 +97,23 @@ class UsuarioController extends Controller
 
     public function edit(User $usuario)
     {
+        $user = auth()->user();
+
+        if ($user->rol !== 'A') {
+            abort(403, 'Acceso no autorizado');
+        }
+
         return Inertia::render('administrador/usuarios/edit', compact('usuario'));
     }
 
     public function update(Request $request, User $usuario)
     {
+        $user = auth()->user();
+
+        if ($user->rol !== 'A') {
+            abort(403, 'Acceso no autorizado');
+        }
+        
         $request->validate([
             'nombre' => ['required', 'string', 'max:30'],
             'apellido' => ['required', 'string', 'max:30'],
@@ -88,21 +124,21 @@ class UsuarioController extends Controller
         ]);
 
         $roleMap = [
-        'administrador' => 'A',
-        'profesor' => 'P',
-        'estudiante' => 'E',
-        'Estudiante' => 'E',
-        'Profesor' => 'P',
-        'Administrador' => 'A',
-        'a' => 'A',
-        'p' => 'P',
-        'e' => 'E',
-        'A' => 'A',
-        'P' => 'P',
-        'E' => 'E',
-    ];
+            'administrador' => 'A',
+            'profesor' => 'P',
+            'estudiante' => 'E',
+            'Estudiante' => 'E',
+            'Profesor' => 'P',
+            'Administrador' => 'A',
+            'a' => 'A',
+            'p' => 'P',
+            'e' => 'E',
+            'A' => 'A',
+            'P' => 'P',
+            'E' => 'E',
+        ];
 
-    $request['rol'] = $roleMap[$request['rol']];
+        $request['rol'] = $roleMap[$request['rol']];
 
         $data = [
             'nombre' => $request->nombre,
