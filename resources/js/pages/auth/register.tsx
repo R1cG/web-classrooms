@@ -53,7 +53,21 @@ export default function Register() {
                                                     <Label htmlFor="cedula" className="text-slate-700 text-sm font-medium flex items-center gap-1.5">
                                                         <IdCard size={13} className="text-slate-400" /> Cédula
                                                     </Label>
-                                                    <Input id="cedula" name="cedula" type="text" required maxLength={9} placeholder="V-00000000" className="h-10 border-slate-200 focus:border-yellow-500 focus:ring-yellow-500/20 rounded-lg text-sm" />
+                                                    <Input
+                                                        id="cedula"
+                                                        name="cedula"
+                                                        type="text"
+                                                        required
+                                                        maxLength={9}
+                                                        placeholder="V-00000000"
+                                                        className="h-10 border-slate-200 focus:border-yellow-500 focus:ring-yellow-500/20 rounded-lg text-sm"
+                                                        pattern="^[0-9]+$"
+                                                        inputMode="numeric"
+                                                        onInput={e => {
+                                                            const input = e.target as HTMLInputElement;
+                                                            input.value = input.value.replace(/[^0-9]/g, '');
+                                                        }}
+                                                    />
                                                     <InputError message={errors.cedula} className="text-xs text-red-500" />
                                                 </div>
                                                 <div className="flex flex-col gap-1.5">

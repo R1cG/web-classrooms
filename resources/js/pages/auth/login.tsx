@@ -50,7 +50,7 @@ export default function Login({ status, canResetPassword, canRegister }: Props) 
                                 Bienvenido de<br /><span className="text-yellow-400">vuelta</span>
                             </h1>
                             <p className="text-slate-400 text-sm leading-relaxed mt-4 max-w-xs font-light">
-                                Accede a tus aulas virtuales, evaluaciones y material académico del Departamento de Computación y Sistemas.
+                                Accede a tus aulas virtuales, evaluaciones y material académico.
                             </p>
                         </div>
                         <div className="space-y-3">
@@ -150,7 +150,7 @@ export default function Login({ status, canResetPassword, canRegister }: Props) 
                                 </Form>
                             </div>
                             <p className="text-center text-slate-400 text-xs mt-5 flex items-center justify-center gap-1.5">
-                                <Shield size={11} /> Acceso con cédula de identidad y contraseña registrada
+                                <Shield size={11} /> Acceso con tu correo y contraseña registrada
                             </p>
                         </div>
                     </div>

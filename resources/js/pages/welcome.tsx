@@ -618,8 +618,7 @@ export default function Welcome({
                 {/* ── Footer ── */}
                 <footer className="footer">
                     <div className="footer-brand">
-                        UDO · Aulas Virtuales
-                        <span>Departamento de Computación y Sistemas — Anzoátegui</span>
+                       
                     </div>
                     <p className="footer-copy">
                         © {new Date().getFullYear()} Universidad de Oriente. Proyecto académico.
