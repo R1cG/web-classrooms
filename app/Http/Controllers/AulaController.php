@@ -20,14 +20,16 @@ class AulaController extends Controller
                 withCount('estudiantes as cantidad_estudiantes')->get();
             $directory = 'administrador';
         } else if ($user->rol === 'P') {
-            $aulas = Aula::with(['materia', 'profesor'])->
-                withCount('estudiantes as cantidad_estudiantes')
-                ->where('profesor_cedula', $user->cedula)
-                ->get();
+            $aulas = Aula::where('profesor_cedula', $user->cedula)
+            ->with('materia:codigo,nombre')
+            ->withCount('estudiantes as cantidad_estudiantes')
+            ->get(['id', 'semestre', 'materia_codigo']);
             $directory = 'profesor';
         } else if ($user->rol === 'E') {
-            $aulas = $user->aulas()->with(['materia', 'profesor'])->get();
-            $directory = 'estudiante';
+            $aulas = $user->aulas()
+            ->with(['materia:codigo,nombre',
+            'profesor:cedula,nombre,apellido'])
+            ->get(['aulas.id','semestre', 'materia_codigo', 'profesor_cedula']);
         } else {
             abort(403, 'Acceso no autorizado');
         }

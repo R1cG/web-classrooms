@@ -70,6 +70,9 @@ Route::get('/aulas/{aula}/editar', [AulaController::class, 'edit']
 Route::put('/aulas/{aula}', [AulaController::class, 'update']
 )->middleware(['auth', 'verified'])->name('aulasUpdate');
 
+Route::get('/aulas/access/{id}', [AulaController::class, 'access']
+)->middleware(['auth', 'verified'])->name('aulasAccess');
+
 
 
 
