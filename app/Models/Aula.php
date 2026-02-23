@@ -39,4 +39,13 @@ class Aula extends Model
         )->using(Incripcion::class)
             ->withPivot('aula_id', 'usuario_cedula');
     }
+
+    public function evaluaciones()
+    {
+        return $this->hasMany(Evaluacion::class, 'aula_id');
+    }
+
+    public function posts(){
+        return $this->hasMany(Post::class, 'aula_id');
+    }
 }

@@ -7,6 +7,8 @@ use Inertia\Inertia;
 use Laravel\Fortify\Features;
 use App\Http\Controllers\AulaController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\PostController;
+use App\Http\Controllers\EvaluacionController;
 
 Route::get('/', function () {
     return Inertia::render('welcome', [
@@ -73,8 +75,34 @@ Route::put('/aulas/{aula}', [AulaController::class, 'update']
 Route::get('/aulas/access/{id}', [AulaController::class, 'access']
 )->middleware(['auth', 'verified'])->name('aulasAccess');
 
+Route::get('/posts/crear/{aulaId}', [PostController::class, 'create'
+])->middleware(['auth', 'verified'])->name('postsCreate');
 
+Route::post('/posts', [PostController::class, 'store'
+])->middleware(['auth', 'verified'])->name('postsStore');
 
+Route::delete('/posts/{id}', [PostController::class, 'destroy']
+)->middleware(['auth', 'verified'])->name('postsDestroy');
 
+Route::get('/posts/{post}/editar', [PostController::class, 'edit'
+])->middleware(['auth', 'verified'])->name('postsEdit');
+
+Route::put('/posts/{post}', [PostController::class, 'update'
+])->middleware(['auth', 'verified'])->name('postsUpdate');
+
+Route::get('/evaluaciones/crear/{aulaId}', [EvaluacionController::class, 'create'
+])->middleware(['auth', 'verified'])->name('evaluacionesCreate');
+
+Route::post('/evaluaciones', [EvaluacionController::class, 'store'
+])->middleware(['auth', 'verified'])->name('evaluacionesStore');
+
+Route::delete('/evaluaciones/{id}', [EvaluacionController::class, 'destroy']
+)->middleware(['auth', 'verified'])->name('evaluacionesDestroy');
+
+Route::get('/evaluaciones/{evaluacion}/editar', [EvaluacionController::class, 'edit'
+])->middleware(['auth', 'verified'])->name('evaluacionesEdit');
+
+Route::put('/evaluaciones/{evaluacion}', [EvaluacionController::class, 'update'
+])->middleware(['auth', 'verified'])->name('evaluacionesUpdate');
 
 require __DIR__.'/settings.php';
