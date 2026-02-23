@@ -37,7 +37,7 @@ class EvaluacionController extends Controller
         $request->validate([
             'aula_id' => 'required|exists:aulas,id',
             'fecha_limite' => 'required|date',
-            'descripcion' => 'required|string|max:255',
+            'descripcion' => 'required|string|max:2000',
         ]);
 
         $user = auth()->user();
@@ -79,7 +79,6 @@ class EvaluacionController extends Controller
         return Inertia::render("{$directory}/evaluaciones/edit", [
             'evaluacion' => [
                 'id' => $evaluacion->id,
-                'aula_id' => $evaluacion->aula_id,
                 'fecha_limite' => $evaluacion->fecha_limite,
                 'descripcion' => $evaluacion->descripcion,
             ],
@@ -100,7 +99,7 @@ class EvaluacionController extends Controller
 
         $request->validate([
             'fecha_limite' => 'required|date',
-            'descripcion' => 'required|string|max:255',
+            'descripcion' => 'required|string|max:2000',
         ]);
 
         $evaluacion->update([
