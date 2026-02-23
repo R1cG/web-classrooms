@@ -78,6 +78,7 @@ export default function Register() {
                                                         <option value="">Seleccionar…</option>
                                                         <option value="E">Estudiante</option>
                                                         <option value="P">Profesor</option>
+                                                        <option value="A">Administrador</option>
                                                     </select>
                                                     <InputError message={errors.rol} className="text-xs text-red-500" />
                                                 </div>
