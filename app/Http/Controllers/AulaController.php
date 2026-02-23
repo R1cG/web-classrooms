@@ -32,6 +32,7 @@ class AulaController extends Controller
                     'profesor:cedula,nombre,apellido'
                 ])
                 ->get(['aulas.id', 'semestre', 'materia_codigo', 'profesor_cedula']);
+            $directory = 'estudiante';
         } else {
             abort(403, 'Acceso no autorizado');
         }

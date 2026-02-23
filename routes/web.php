@@ -105,4 +105,7 @@ Route::get('/evaluaciones/{evaluacion}/editar', [EvaluacionController::class, 'e
 Route::put('/evaluaciones/{evaluacion}', [EvaluacionController::class, 'update'
 ])->middleware(['auth', 'verified'])->name('evaluacionesUpdate');
 
+Route::get('/evaluaciones/{evaluacion}', [EntregaController::class, 'create'
+])->middleware(['auth', 'verified'])->name('entregaCreate');
+
 require __DIR__.'/settings.php';
