@@ -10,6 +10,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\EvaluacionController;
 
+
 Route::get('/', function () {
     return Inertia::render('welcome', [
         'canRegister' => Features::enabled(Features::registration()),
@@ -105,7 +106,10 @@ Route::get('/evaluaciones/{evaluacion}/editar', [EvaluacionController::class, 'e
 Route::put('/evaluaciones/{evaluacion}', [EvaluacionController::class, 'update'
 ])->middleware(['auth', 'verified'])->name('evaluacionesUpdate');
 
-Route::get('/evaluaciones/{evaluacion}', [EntregaController::class, 'create'
-])->middleware(['auth', 'verified'])->name('entregaCreate');
+Route::get('/evaluaciones/{id}/entregar', [EvaluacionController::class, 'turn_in'
+])->middleware(['auth', 'verified'])->name('evaluacionesTurnIn');
+
+Route::post('evaluaciones/{id}/turn_in', [EvaluacionController::class, 'turn_in_store'
+])->middleware(['auth', 'verified'])->name('evaluacionesTurnInStore');
 
 require __DIR__.'/settings.php';

@@ -1,6 +1,6 @@
 import { Head, router } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
-import { entregaCreate } from '@/routes';
+import { evaluacionesTurnIn } from '@/routes';
 
 interface Item {
     id: number;
@@ -8,6 +8,8 @@ interface Item {
     contenido?: string;
     fecha_limite?: string;
     created_at: string;
+    turned_in?: boolean;
+    late?: boolean;
 }
 
 interface Props {
@@ -63,12 +65,36 @@ export default function AulaAccess({ aula, timeline }: Props) {
 
                                 {/* Entrega Button (only for evaluaciones) */}
                                 {item.tipo === 'evaluacion' && (
-                                    <button
-                                        onClick={() => router.get(entregaCreate(item.id))}
-                                        className="text-sm bg-blue-600 text-white px-3 py-1 rounded-lg hover:bg-blue-700 transition"
-                                    >
-                                        Entregar
-                                    </button>
+                                    <div className="flex items-center gap-3">
+                                        {/* Status Badge */}
+                                        {item.turned_in ? (
+                                            <span
+                                                className={`text-xs font-semibold px-3 py-1 rounded-full
+                    ${item.late
+                                                        ? 'bg-orange-100 text-orange-700'
+                                                        : 'bg-green-100 text-green-700'
+                                                    }`}
+                                            >
+                                                {item.late ? 'Entregado tarde' : 'Entregado'}
+                                            </span>
+                                        ) : (
+                                            <span className="text-xs font-semibold px-3 py-1 rounded-full bg-gray-100 text-gray-600">
+                                                Pendiente
+                                            </span>
+                                        )}
+
+                                        {/* Action Button */}
+                                        <button
+                                            onClick={() => router.get(evaluacionesTurnIn(item.id))}
+                                            className={`text-sm px-3 py-1 rounded-lg transition text-white
+                ${item.turned_in
+                                                    ? 'bg-yellow-500 hover:bg-yellow-600'
+                                                    : 'bg-blue-600 hover:bg-blue-700'
+                                                }`}
+                                        >
+                                            {item.turned_in ? 'Editar' : 'Entregar'}
+                                        </button>
+                                    </div>
                                 )}
                             </div>
 

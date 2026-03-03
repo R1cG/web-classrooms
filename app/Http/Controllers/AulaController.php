@@ -174,11 +174,17 @@ class AulaController extends Controller
 
         $aula = Aula::with([
             'materia:codigo,nombre',
-            'posts' => function ($query) {
+            'posts' => fn($query) => $query->latest(),
+            'evaluaciones' => function ($query) use ($user) {
                 $query->latest();
-            },
-            'evaluaciones' => function ($query) {
-                $query->latest();
+
+                if ($user->rol === 'E') {
+                    $query->with([
+                        'usuarios' => function ($q) use ($user) {
+                            $q->where('usuario_cedula', $user->cedula);
+                        }
+                    ]);
+                }
             }
         ])->findOrFail($id);
 
@@ -208,13 +214,36 @@ class AulaController extends Controller
             ];
         });
 
-        $evaluacionCollection = $aula->evaluaciones->map(function ($evaluacion) {
+        $evaluacionCollection = $aula->evaluaciones->map(function ($evaluacion) use ($user) {
+
+            $turned_in = false;
+            $late = false;
+
+            if ($user->rol === 'E') {
+
+                $usuario = $evaluacion->usuarios->first();
+
+                if ($usuario) {
+                    $turned_in = true;
+
+                    $pivotUpdated = $usuario->pivot->updated_at;
+
+                    $late = $pivotUpdated->isAfter($evaluacion->fecha_limite);
+
+                } else {
+                    if (now()->isAfter($evaluacion->fecha_limite))
+                        $late = true;
+                }
+            }
+
             return [
                 'id' => $evaluacion->id,
                 'tipo' => 'evaluacion',
                 'contenido' => $evaluacion->descripcion,
                 'fecha_limite' => $evaluacion->fecha_limite,
                 'created_at' => $evaluacion->created_at,
+                'turned_in' => $turned_in,
+                'late' => $late,
             ];
         });
 

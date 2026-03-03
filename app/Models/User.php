@@ -74,4 +74,16 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Aula::class, 'aula_usuario', 'usuario_cedula', 'aula_id')->using(Incripcion::class);
     }
+
+    public function evaluaciones()
+    {
+        return $this->belongsToMany(
+            Evaluacion::class,
+            'usuario_evaluacion',
+            'usuario_cedula',
+            'evaluacion_id'
+        )->using(Entrega::class)
+            ->withPivot('url')
+            ->withTimestamps();
+    }
 }

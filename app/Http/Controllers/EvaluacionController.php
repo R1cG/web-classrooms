@@ -16,11 +16,11 @@ class EvaluacionController extends Controller
 
         $aula = Aula::findOrFail($aulaId);
 
-        if(($user->rol !== 'A')&&($user->rol !== 'P' || $aula->profesor_cedula !== $user->cedula)) {
+        if (($user->rol !== 'A') && ($user->rol !== 'P' || $aula->profesor_cedula !== $user->cedula)) {
             abort(403, 'Acceso no autorizado');
         }
-        
-        if ($user->rol === 'A'){
+
+        if ($user->rol === 'A') {
             $directory = 'administrador';
         } else {
             $directory = 'profesor';
@@ -44,9 +44,11 @@ class EvaluacionController extends Controller
 
         $aula = Aula::findOrFail($request->aula_id);
 
-        if(($user->rol !== 'A')&&($user->rol !== 'P' || $aula->profesor_cedula !== $user->cedula)) {
+        if (($user->rol !== 'A') && ($user->rol !== 'P' || $aula->profesor_cedula !== $user->cedula)) {
             abort(403, 'Acceso no autorizado');
         }
+
+        dd([ 'fecha_limite' => $request->fecha_limite]);
 
         Evaluacion::create([
             'aula_id' => $request->aula_id,
@@ -58,7 +60,8 @@ class EvaluacionController extends Controller
             ->with('success', 'Evaluación creada exitosamente.');
     }
 
-    public function edit($evaluacionId){
+    public function edit($evaluacionId)
+    {
 
         $evaluacion = Evaluacion::findOrFail($evaluacionId);
 
@@ -66,11 +69,11 @@ class EvaluacionController extends Controller
 
         $aula = Aula::findOrFail($evaluacion->aula_id);
 
-        if(($user->rol !== 'A')&&($user->rol !== 'P' || $aula->profesor_cedula !== $user->cedula)) {
+        if (($user->rol !== 'A') && ($user->rol !== 'P' || $aula->profesor_cedula !== $user->cedula)) {
             abort(403, 'Acceso no autorizado');
         }
 
-        if ($user->rol === 'A'){
+        if ($user->rol === 'A') {
             $directory = 'administrador';
         } else {
             $directory = 'profesor';
@@ -85,7 +88,8 @@ class EvaluacionController extends Controller
         ]);
     }
 
-    public function update(Request $request, $evaluacionId){
+    public function update(Request $request, $evaluacionId)
+    {
 
         $evaluacion = Evaluacion::findOrFail($evaluacionId);
 
@@ -93,7 +97,7 @@ class EvaluacionController extends Controller
 
         $aula = Aula::findOrFail($evaluacion->aula_id);
 
-        if(($user->rol !== 'A')&&($user->rol !== 'P' || $aula->profesor_cedula !== $user->cedula)) {
+        if (($user->rol !== 'A') && ($user->rol !== 'P' || $aula->profesor_cedula !== $user->cedula)) {
             abort(403, 'Acceso no autorizado');
         }
 
@@ -119,7 +123,7 @@ class EvaluacionController extends Controller
 
         $aula = Aula::findOrFail($evaluacion->aula_id);
 
-        if(($user->rol !== 'A')&&($user->rol !== 'P' || $aula->profesor_cedula !== $user->cedula)) {
+        if (($user->rol !== 'A') && ($user->rol !== 'P' || $aula->profesor_cedula !== $user->cedula)) {
             abort(403, 'Acceso no autorizado');
         }
 
@@ -130,4 +134,80 @@ class EvaluacionController extends Controller
             ->with('success', 'Evaluación eliminada exitosamente.');
     }
 
+    public function turn_in($evaluacionId)
+    {
+        $user = auth()->user();
+
+        if ($user->rol !== 'E')
+            abort(403, 'Acceso no autorizado');
+
+        $evaluacion = Evaluacion::with('aula')->findOrFail($evaluacionId);
+
+        $aula = $evaluacion->aula;
+
+        $inscrito = $user->aulas()
+            ->where('aulas.id', $aula->id)
+            ->exists();
+
+        if (!$inscrito)
+            abort(403, 'Acceso no autorizado');
+
+        $entrega = $evaluacion->usuarios()
+            ->where('usuario_cedula', $user->cedula)
+            ->first();
+
+        return Inertia::render('estudiante/evaluaciones/turn_in', [
+            'evaluacion' => [
+                'id' => $evaluacion->id,
+                'descripcion' => $evaluacion->descripcion,
+                'fecha_limite' => $evaluacion->fecha_limite,
+            ],
+            'entrega' => $entrega ? [
+                'url' => $entrega->pivot->url,
+                'updated_at' => $entrega->pivot->updated_at,
+            ] : null,
+        ]);
+    }
+
+    public function turn_in_store(Request $request, $evaluacionId)
+    {
+        $user = auth()->user();
+        if ($user->rol !== 'E')
+            abort(403, 'Acceso no autorizado');
+
+        $evaluacion = Evaluacion::with('aula')
+            ->findOrFail($evaluacionId);
+        $aula = $evaluacion->aula;
+
+        $inscrito = $user->aulas()->where('aulas.id', $aula->id)->exists();
+        if (!$inscrito)
+            abort(403, 'Acceso no autorizado');
+
+        $request->validate([
+            'url' => 'required|string|max:500',
+        ]);
+
+        $existing = $evaluacion->usuarios()->where('usuario_cedula', $user->cedula)->exists();
+
+
+        if ($existing)
+            $evaluacion->usuarios()->updateExistingPivot($user->cedula, [
+                'url' => $request->url,
+            ]);
+        else
+            $evaluacion->usuarios()->attach(
+                $user->cedula,
+                [
+                    'url' => $request->url,
+                ]
+            );
+
+        $aulaId = $evaluacion->aula_id;
+
+        return redirect()->route('aulasAccess', ['id' => $aulaId])
+            ->with('success', 'Entrega registrada exitosamente.');
+
+    }
+
 }
+

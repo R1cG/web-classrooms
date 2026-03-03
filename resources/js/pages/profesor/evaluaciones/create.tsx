@@ -25,7 +25,19 @@ export default function EvaluacionCreate({ aulaId }: Props) {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        post(evaluacionesStore.url());
+
+        if (!data.fecha_limite) return;
+
+        const localDate = new Date(data.fecha_limite);
+
+         const utcString = localDate.toISOString();
+
+        post(evaluacionesStore.url(), {
+            data: {
+                ...data,
+                fecha_limite: utcString,
+            },
+        });
     };
 
     const inputClass =
@@ -39,9 +51,8 @@ export default function EvaluacionCreate({ aulaId }: Props) {
             <Head title="Crear Evaluación" />
 
             <div
-                className={`min-h-screen bg-slate-50 p-4 md:p-8 transition-opacity duration-700 ${
-                    isVisible ? 'opacity-100' : 'opacity-0'
-                }`}
+                className={`min-h-screen bg-slate-50 p-4 md:p-8 transition-opacity duration-700 ${isVisible ? 'opacity-100' : 'opacity-0'
+                    }`}
             >
                 <div className="max-w-2xl mx-auto">
                     {/* Header */}
