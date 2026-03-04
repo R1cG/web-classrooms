@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Evaluacion;
 use Inertia\Inertia;
 use App\Models\Aula;
+use Carbon\Carbon;
 
 class EvaluacionController extends Controller
 {
@@ -38,6 +39,7 @@ class EvaluacionController extends Controller
             'aula_id' => 'required|exists:aulas,id',
             'fecha_limite' => 'required|date',
             'descripcion' => 'required|string|max:2000',
+            'user_timezone' => 'required|string',
         ]);
 
         $user = auth()->user();
@@ -48,11 +50,16 @@ class EvaluacionController extends Controller
             abort(403, 'Acceso no autorizado');
         }
 
-        dd([ 'fecha_limite' => $request->fecha_limite]);
+        $localTime = $request->fecha_limite;
+        $userTimezone = $request->user_timezone;
+        $utcTime = Carbon::parse(
+            $request->fecha_limite,
+            $request->user_timezone
+        )->utc();
 
         Evaluacion::create([
             'aula_id' => $request->aula_id,
-            'fecha_limite' => $request->fecha_limite,
+            'fecha_limite' => $utcTime,
             'descripcion' => $request->descripcion,
         ]);
 

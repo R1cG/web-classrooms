@@ -15,6 +15,7 @@ export default function EvaluacionCreate({ aulaId }: Props) {
         aula_id: aulaId,
         fecha_limite: '',
         descripcion: '',
+        user_timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     });
 
     const [isVisible, setIsVisible] = useState(false);
@@ -28,16 +29,7 @@ export default function EvaluacionCreate({ aulaId }: Props) {
 
         if (!data.fecha_limite) return;
 
-        const localDate = new Date(data.fecha_limite);
-
-         const utcString = localDate.toISOString();
-
-        post(evaluacionesStore.url(), {
-            data: {
-                ...data,
-                fecha_limite: utcString,
-            },
-        });
+        post(evaluacionesStore.url());
     };
 
     const inputClass =
