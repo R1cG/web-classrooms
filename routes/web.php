@@ -109,7 +109,10 @@ Route::put('/evaluaciones/{evaluacion}', [EvaluacionController::class, 'update'
 Route::get('/evaluaciones/{id}/entregar', [EvaluacionController::class, 'turn_in'
 ])->middleware(['auth', 'verified'])->name('evaluacionesTurnIn');
 
-Route::post('evaluaciones/{id}/turn_in', [EvaluacionController::class, 'turn_in_store'
+Route::post('/evaluaciones/{id}/turn_in', [EvaluacionController::class, 'turn_in_store'
 ])->middleware(['auth', 'verified'])->name('evaluacionesTurnInStore');
+
+Route::get('/evaluaciones/{id}/turn_ins', [EvaluacionController::class, 'turn_ins'
+])->middleware(['auth', 'verified'])->name('evaluacionesTurnInList');
 
 require __DIR__.'/settings.php';

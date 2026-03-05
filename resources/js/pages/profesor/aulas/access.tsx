@@ -1,7 +1,7 @@
 import { Head, router } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import { useState } from 'react';
-import { postsCreate, postsEdit, postsDestroy, evaluacionesCreate, evaluacionesEdit, evaluacionesDestroy  } from '@/routes';
+import { postsCreate, postsEdit, postsDestroy, evaluacionesCreate, evaluacionesEdit, evaluacionesDestroy, evaluacionesTurnInList } from '@/routes';
 
 interface Item {
     id: number;
@@ -30,13 +30,13 @@ export default function AulaAccess({ aula, timeline }: Props) {
 
         setLoadingDelete(item.id);
 
-        try{
+        try {
             if (item.tipo === 'post') {
                 await router.delete(postsDestroy(item.id));
             } else {
                 await router.delete(evaluacionesDestroy(item.id));
             }
-        }finally{
+        } finally {
             setLoadingDelete(null);
         }
     };
@@ -92,7 +92,18 @@ export default function AulaAccess({ aula, timeline }: Props) {
                                     {item.tipo === 'post' ? 'Post' : 'Evaluación'}
                                 </span>
 
-                                <div className="flex gap-2">
+                                <div className="flex gap-2 items-center">
+
+                                    {/* Entregas button (only for evaluaciones) */}
+                                    {item.tipo === 'evaluacion' && (
+                                        <button
+                                            onClick={() => router.get(evaluacionesTurnInList(item.id))}
+                                            className="text-sm text-blue-600 hover:underline"
+                                        >
+                                            Entregas
+                                        </button>
+                                    )}
+
                                     <button
                                         onClick={() =>
                                             item.tipo === 'post'
