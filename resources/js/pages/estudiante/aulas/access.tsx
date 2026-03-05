@@ -1,5 +1,6 @@
 import { Head, router } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
+import TurnIn from '@/pages/estudiante/evaluaciones/turn_in'; // ajusta el path según tu estructura
 
 import {
     BookOpen,
@@ -15,8 +16,9 @@ import {
     CheckCircle2,
     AlertCircle
 } from 'lucide-react';
+
 import { useState, useEffect } from 'react';
-import { evaluacionesTurnIn } from '@/routes';
+
 
 interface Item {
     id: number;
@@ -24,10 +26,14 @@ interface Item {
     contenido?: string;
     fecha_limite?: string;
     created_at: string;
-    entregado?: boolean; 
-    calificacion?: number; 
+    entregado?: boolean;
+    calificacion?: number;
     turned_in?: boolean;
     late?: boolean;
+    entrega?: {
+        url: string;
+        updated_at: string;
+    } | null;
 }
 
 interface Props {
@@ -47,6 +53,12 @@ interface Props {
 
 export default function AulaAccess({ aula, timeline }: Props) {
     const [mounted, setMounted] = useState(false);
+
+    // Modal: entregar / editar entrega
+    const [turnInTarget, setTurnInTarget] = useState<{
+        evaluacion: { id: number; contenido?: string; fecha_limite?: string };
+        entrega?: { url: string; updated_at: string } | null;
+    } | null>(null);
 
     useEffect(() => {
         const t = setTimeout(() => setMounted(true), 50);
@@ -73,8 +85,17 @@ export default function AulaAccess({ aula, timeline }: Props) {
         };
     };
 
-    const isOverdue = (fechaLimite: string) => {
-        return new Date(fechaLimite) < new Date();
+    const isOverdue = (fechaLimite: string) => new Date(fechaLimite) < new Date();
+
+    const handleTurnInClick = (item: Item) => {
+        setTurnInTarget({
+            evaluacion: {
+                id: item.id,
+                contenido: item.contenido,
+                fecha_limite: item.fecha_limite,
+            },
+            entrega: item.entrega ?? null,
+        });
     };
 
     return (
@@ -87,38 +108,27 @@ export default function AulaAccess({ aula, timeline }: Props) {
                 .aula-root { font-family: 'DM Sans', sans-serif; }
                 .aula-title { font-family: 'Lora', serif; }
 
-                .aula-card-enter {
-                    opacity: 0;
-                    transform: translateY(18px);
-                }
+                .aula-card-enter { opacity: 0; transform: translateY(18px); }
                 .aula-card-enter.visible {
-                    opacity: 1;
-                    transform: translateY(0);
+                    opacity: 1; transform: translateY(0);
                     transition: opacity 0.5s ease, transform 0.5s ease;
                 }
 
                 .header-gradient {
                     background: linear-gradient(135deg, #060f1e 0%, #0b1f3a 50%, #112b50 100%);
-                    position: relative;
-                    overflow: hidden;
+                    position: relative; overflow: hidden;
                 }
                 .header-gradient::before {
-                    content: '';
-                    position: absolute;
-                    top: -40%;
-                    right: -10%;
-                    width: 340px;
-                    height: 340px;
+                    content: ''; position: absolute;
+                    top: -40%; right: -10%;
+                    width: 340px; height: 340px;
                     background: radial-gradient(circle, rgba(245,158,11,0.12) 0%, transparent 70%);
                     pointer-events: none;
                 }
                 .header-gradient::after {
-                    content: '';
-                    position: absolute;
-                    bottom: -30%;
-                    left: 30%;
-                    width: 240px;
-                    height: 240px;
+                    content: ''; position: absolute;
+                    bottom: -30%; left: 30%;
+                    width: 240px; height: 240px;
                     background: radial-gradient(circle, rgba(59,130,246,0.08) 0%, transparent 70%);
                     pointer-events: none;
                 }
@@ -146,22 +156,14 @@ export default function AulaAccess({ aula, timeline }: Props) {
                 .item-card-post { border-left-color: #10b981; }
                 .item-card-evaluacion { border-left-color: #3b82f6; }
 
-                .btn-action {
-                    transition: all 0.15s ease;
-                }
+                .btn-action { transition: all 0.15s ease; }
                 .btn-action:hover { transform: translateY(-1px); }
                 .btn-action:active { transform: translateY(0); }
 
                 .back-link { transition: all 0.15s ease; }
                 .back-link:hover { gap: 6px; }
-
-                .entrega-badge {
-                    transition: all 0.2s ease;
-                }
-                .entrega-badge:hover {
-                    filter: brightness(0.95);
-                }
-            `}</style>
+            `}
+            </style>
 
             <div className="aula-root min-h-screen bg-slate-50 p-4 md:p-8">
                 <div className="max-w-4xl mx-auto">
@@ -231,7 +233,9 @@ export default function AulaAccess({ aula, timeline }: Props) {
                                 {timeline.length > 0 && (
                                     <div className="flex items-center gap-2 ml-auto">
                                         <Sparkles size={11} className="text-amber-400/60" />
-                                        <span className="text-xs text-slate-400">{timeline.length} elemento{timeline.length !== 1 ? 's' : ''}</span>
+                                        <span className="text-xs text-slate-400">
+                                            {timeline.length} elemento{timeline.length !== 1 ? 's' : ''}
+                                        </span>
                                     </div>
                                 )}
                             </div>
@@ -261,12 +265,12 @@ export default function AulaAccess({ aula, timeline }: Props) {
                             <div className="space-y-4">
                                 {timeline.map((item, index) => {
                                     const d = formatDateShort(item.created_at);
-                                    const overdue = item.tipo === 'evaluacion' && item.fecha_limite && isOverdue(item.fecha_limite);
-                                    
-                                    // Determinar el estado de entrega combinando ambas propiedades
+                                    const overdue = item.tipo === 'evaluacion' && item.fecha_limite
+                                        ? isOverdue(item.fecha_limite)
+                                        : false;
                                     const isTurnedIn = item.turned_in || item.entregado;
                                     const isLate = item.late || false;
-                                    
+
                                     return (
                                         <div
                                             key={`${item.tipo}-${item.id}`}
@@ -297,10 +301,10 @@ export default function AulaAccess({ aula, timeline }: Props) {
                                                         <span className="text-[11px] text-slate-400">{d.time}</span>
                                                     </div>
 
-                                                    {/* Estado de entrega (solo para evaluaciones) */}
+                                                    {/* Estado de entrega */}
                                                     {item.tipo === 'evaluacion' && (
                                                         <div className={`flex items-center gap-1.5 text-[11px] font-medium px-2 py-1 rounded-full
-                                                            ${isTurnedIn 
+                                                            ${isTurnedIn
                                                                 ? isLate
                                                                     ? 'bg-orange-50 text-orange-700 border border-orange-200'
                                                                     : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
@@ -310,26 +314,14 @@ export default function AulaAccess({ aula, timeline }: Props) {
                                                             }`}>
                                                             {isTurnedIn ? (
                                                                 isLate ? (
-                                                                    <>
-                                                                        <Clock size={10} />
-                                                                        <span>Entregado tarde</span>
-                                                                    </>
+                                                                    <><Clock size={10} /><span>Entregado tarde</span></>
                                                                 ) : (
-                                                                    <>
-                                                                        <CheckCircle2 size={10} />
-                                                                        <span>Entregado</span>
-                                                                    </>
+                                                                    <><CheckCircle2 size={10} /><span>Entregado</span></>
                                                                 )
                                                             ) : overdue ? (
-                                                                <>
-                                                                    <AlertCircle size={10} />
-                                                                    <span>Vencido</span>
-                                                                </>
+                                                                <><AlertCircle size={10} /><span>Vencido</span></>
                                                             ) : (
-                                                                <>
-                                                                    <Clock size={10} />
-                                                                    <span>Pendiente</span>
-                                                                </>
+                                                                <><Clock size={10} /><span>Pendiente</span></>
                                                             )}
                                                         </div>
                                                     )}
@@ -339,16 +331,17 @@ export default function AulaAccess({ aula, timeline }: Props) {
                                                     <p className={`leading-relaxed ${item.tipo === 'evaluacion' ? 'font-medium text-slate-800' : 'text-slate-700'} text-sm`}>
                                                         {item.contenido}
                                                     </p>
-                                                    
+
                                                     {/* Detalles de evaluación */}
                                                     {item.tipo === 'evaluacion' && (
                                                         <>
                                                             {item.fecha_limite && (
-                                                                <div className={`mt-3 inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-lg
-                                                                    ${overdue 
-                                                                        ? 'bg-red-50 border-red-200 text-red-700'
-                                                                        : 'bg-amber-50 border-amber-200 text-amber-700'
-                                                                    }`}
+                                                                <div
+                                                                    className={`mt-3 inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-lg
+                                                                        ${overdue
+                                                                            ? 'bg-red-50 border-red-200 text-red-700'
+                                                                            : 'bg-amber-50 border-amber-200 text-amber-700'
+                                                                        }`}
                                                                     style={{ border: '1px solid' }}
                                                                 >
                                                                     <Clock size={11} className={overdue ? 'text-red-500' : 'text-amber-500'} />
@@ -358,52 +351,41 @@ export default function AulaAccess({ aula, timeline }: Props) {
                                                                     </span>
                                                                 </div>
                                                             )}
-                                                            
+
                                                             {item.calificacion !== undefined && (
                                                                 <div className="mt-3 inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-lg bg-purple-50 border border-purple-200 text-purple-700">
                                                                     <GraduationCap size={11} className="text-purple-500" />
                                                                     <span>Calificación: <strong>{item.calificacion}</strong></span>
                                                                 </div>
                                                             )}
+
+                                                            {/* Botón de acción — abre el modal */}
+                                                            <div className="mt-4 flex justify-end">
+                                                                <button
+                                                                    onClick={() => {
+                                                                        if (!(overdue && !isTurnedIn)) {
+                                                                            handleTurnInClick(item);
+                                                                        }
+                                                                    }}
+                                                                    className={`btn-action px-4 py-2 text-white text-xs font-semibold rounded-xl flex items-center gap-2 transition-colors
+                                                                        ${isTurnedIn
+                                                                            ? 'bg-yellow-600 hover:bg-yellow-700'
+                                                                            : overdue
+                                                                                ? 'bg-gray-400 cursor-not-allowed opacity-50'
+                                                                                : 'bg-blue-600 hover:bg-blue-700'
+                                                                        }`}
+                                                                >
+                                                                    {isTurnedIn ? (
+                                                                        <><PenLine size={13} />{isLate ? 'Ver/Editar Entrega' : 'Editar Entrega'}</>
+                                                                    ) : overdue ? (
+                                                                        <><AlertCircle size={13} />Fuera de plazo</>
+                                                                    ) : (
+                                                                        <><ClipboardList size={13} />Realizar Entrega</>
+                                                                    )}
+                                                                </button>
+                                                            </div>
                                                         </>
                                                     )}
-
-                                                    {/* Botón de acción para evaluaciones */}
-                                                    {item.tipo === 'evaluacion' && (
-    <div className="mt-4 flex justify-end">
-        <button
-            onClick={() => {
-                if (!(overdue && !isTurnedIn)) {
-                    router.get(evaluacionesTurnIn(item.id));
-                }
-            }}
-            className={`btn-action px-4 py-2 text-white text-xs font-semibold rounded-xl flex items-center gap-2 transition-colors
-                ${isTurnedIn
-                    ? 'bg-yellow-600 hover:bg-yellow-700'
-                    : overdue
-                        ? 'bg-gray-400 cursor-not-allowed opacity-50'
-                        : 'bg-blue-600 hover:bg-blue-700'
-                }`}
-        >
-            {isTurnedIn ? (
-                <>
-                    <PenLine size={13} />
-                    {isLate ? 'Ver/Editar Entrega' : 'Editar Entrega'}
-                </>
-            ) : overdue ? (
-                <>
-                    <AlertCircle size={13} />
-                    Fuera de plazo
-                </>
-            ) : (
-                <>
-                    <ClipboardList size={13} />
-                    Realizar Entrega
-                </>
-            )}
-        </button>
-    </div>
-)}
                                                 </div>
                                             </div>
                                         </div>
@@ -426,6 +408,14 @@ export default function AulaAccess({ aula, timeline }: Props) {
 
                 </div>
             </div>
+
+            {/* ── MODAL TURN IN ── */}
+            <TurnIn
+                evaluacion={turnInTarget?.evaluacion ?? null}
+                entrega={turnInTarget?.entrega}
+                isOpen={turnInTarget !== null}
+                onClose={() => setTurnInTarget(null)}
+            />
         </AppLayout>
     );
 }
