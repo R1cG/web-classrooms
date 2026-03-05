@@ -216,5 +216,43 @@ class EvaluacionController extends Controller
 
     }
 
+    public function turn_ins($evaluacionId)
+    {
+        return;
+        $user = auth()->user();
+
+        $evaluacion = Evaluacion::with(['aula', 'usuarios'])
+            ->findOrFail($evaluacionId);
+
+        $aula = $evaluacion->aula;
+
+        if ($aula->profesor_cedula !== $user->cedula && $user->rol === 'P')
+            abort(403, 'Acceso no autorizado');
+
+        $turnIns = $evaluacion->usuarios()->map(function($student) use ($evaluacion){
+            $sumittedAt = $student->pivot->updated_at;
+            $deadline = $evaluacion->fecha_limite;
+
+            return [
+                'cedula' => $student->cedula,
+                'nombre' => $student->nombre,
+                'apellido' => $student->apellido,
+                'url' => $student->pivot->url,
+                'sumitted_at' => $sumittedAt,
+                'on_time' => $sumittedAt <= $ $deadline,
+            ];
+        });
+
+        return Inertia::render('profesor/evaluaciones/turn_ins',
+        [
+            'evaluacion' => [
+                'id' => $evaluacion->id,
+                'descripcion' => $evaluacion->descripcion,
+                'fecha_limite' => $evaluacion->fecha_limite,
+            ],
+            'turn_ins' => $turnIns,
+        ]);
+    }
+
 }
 
