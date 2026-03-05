@@ -1,5 +1,6 @@
 import { Head, router } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
+<<<<<<< HEAD
 import PostCreate from '@/pages/profesor/posts/create';
 import PostEdit from '@/pages/profesor/posts/edit';
 import {
@@ -18,6 +19,10 @@ import {
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { postsDestroy, evaluacionesCreate, evaluacionesEdit, evaluacionesDestroy } from '@/routes';
+=======
+import { useState } from 'react';
+import { postsCreate, postsEdit, postsDestroy, evaluacionesCreate, evaluacionesEdit, evaluacionesDestroy, evaluacionesTurnInList } from '@/routes';
+>>>>>>> 6558379dcdcffd78ed8874cbb421ff78c936ccfe
 
 interface Item {
     id: number;
@@ -62,6 +67,10 @@ export default function AulaAccess({ aula, timeline }: Props) {
         if (!confirm('¿Estás seguro que deseas eliminar esto?')) return;
         if (!confirm('Esta acción no se puede deshacer. Confirmar nuevamente.')) return;
         setLoadingDelete(item.id);
+<<<<<<< HEAD
+=======
+
+>>>>>>> 6558379dcdcffd78ed8874cbb421ff78c936ccfe
         try {
             if (item.tipo === 'post') {
                 await router.delete(postsDestroy(item.id));
@@ -165,6 +174,7 @@ export default function AulaAccess({ aula, timeline }: Props) {
                     background: linear-gradient(to bottom, #e2e8f0, #f1f5f9);
                 }
 
+<<<<<<< HEAD
                 .item-card {
                     border-left-width: 3px;
                     transition: box-shadow 0.2s ease, transform 0.2s ease;
@@ -209,6 +219,27 @@ export default function AulaAccess({ aula, timeline }: Props) {
                                     <div
                                         className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0"
                                         style={{ background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.25)' }}
+=======
+                                <div className="flex gap-2 items-center">
+
+                                    {/* Entregas button (only for evaluaciones) */}
+                                    {item.tipo === 'evaluacion' && (
+                                        <button
+                                            onClick={() => router.get(evaluacionesTurnInList(item.id))}
+                                            className="text-sm text-blue-600 hover:underline"
+                                        >
+                                            Entregas
+                                        </button>
+                                    )}
+
+                                    <button
+                                        onClick={() =>
+                                            item.tipo === 'post'
+                                                ? router.get(postsEdit(item.id))
+                                                : router.get(evaluacionesEdit(item.id))
+                                        }
+                                        className="text-sm text-yellow-600 hover:underline"
+>>>>>>> 6558379dcdcffd78ed8874cbb421ff78c936ccfe
                                     >
                                         <BookOpen size={24} className="text-amber-400" />
                                     </div>

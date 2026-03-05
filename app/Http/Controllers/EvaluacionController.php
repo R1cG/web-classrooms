@@ -218,7 +218,7 @@ class EvaluacionController extends Controller
 
     public function turn_ins($evaluacionId)
     {
-        return;
+
         $user = auth()->user();
 
         $evaluacion = Evaluacion::with(['aula', 'usuarios'])
@@ -229,7 +229,7 @@ class EvaluacionController extends Controller
         if ($aula->profesor_cedula !== $user->cedula && $user->rol === 'P')
             abort(403, 'Acceso no autorizado');
 
-        $turnIns = $evaluacion->usuarios()->map(function($student) use ($evaluacion){
+        $turnIns = $evaluacion->usuarios->map(function($student) use ($evaluacion){
             $sumittedAt = $student->pivot->updated_at;
             $deadline = $evaluacion->fecha_limite;
 
@@ -238,8 +238,8 @@ class EvaluacionController extends Controller
                 'nombre' => $student->nombre,
                 'apellido' => $student->apellido,
                 'url' => $student->pivot->url,
-                'sumitted_at' => $sumittedAt,
-                'on_time' => $sumittedAt <= $ $deadline,
+                'submitted_at' => $sumittedAt,
+                'on_time' => $sumittedAt <= $deadline,
             ];
         });
 
@@ -250,7 +250,7 @@ class EvaluacionController extends Controller
                 'descripcion' => $evaluacion->descripcion,
                 'fecha_limite' => $evaluacion->fecha_limite,
             ],
-            'turn_ins' => $turnIns,
+            'turn_ins' => $turnIns->values()->toArray(),
         ]);
     }
 
