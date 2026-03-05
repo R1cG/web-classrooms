@@ -14,6 +14,7 @@ export default function EvaluacionCreate({ aulaId }: Props) {
         aula_id: aulaId,
         fecha_limite: '',
         descripcion: '',
+        user_timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     });
 
     const [mounted, setMounted] = useState(false);
@@ -44,6 +45,7 @@ export default function EvaluacionCreate({ aulaId }: Props) {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        if (!data.fecha_limite) return;
         post(evaluacionesStore.url(), {
             onSuccess: () => reset(),
         });
@@ -56,14 +58,24 @@ export default function EvaluacionCreate({ aulaId }: Props) {
     return (
         <AppLayout>
             <Head title="Crear Evaluación" />
-
+            <div
+                className={`min-h-screen bg-slate-50 p-4 md:p-8 transition-opacity duration-700 ${mounted ? 'opacity-100' : 'opacity-0'}`}
+            >
+                <div className="max-w-2xl mx-auto">
+                    {/* Header */}
+                    <div className="flex items-center justify-between mb-6">
+                        <h1
+                            className="text-2xl font-bold text-[#0b1f3a]"
+                            style={{ fontFamily: "'Playfair Display', serif" }}
+                        >
+                            Crear nueva Evaluación
+                        </h1>
+                    </div>
+                    {/* ...existing code... */}
+                </div>
+            </div>
             <style>{`
                 @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');
-
-                .ev-root { font-family: 'DM Sans', sans-serif; }
-                .ev-title { font-family: 'Lora', serif; }
-
-                .ev-card-enter {
                     opacity: 0;
                     transform: translateY(18px);
                 }

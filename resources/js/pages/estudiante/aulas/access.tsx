@@ -23,8 +23,10 @@ interface Item {
     contenido?: string;
     fecha_limite?: string;
     created_at: string;
-    entregado?: boolean; 
-    calificacion?: number; 
+    entregado?: boolean; // compatibilidad con versiones anteriores
+    calificacion?: number;
+    turned_in?: boolean;
+    late?: boolean;
 }
 
 interface Props {
