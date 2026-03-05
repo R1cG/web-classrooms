@@ -135,7 +135,7 @@ export default function TurnIns({ evaluacion, turn_ins }: Props) {
                                         <p className="text-blue-400/80 text-[10px] font-semibold tracking-[0.18em] uppercase mb-1">
                                             Evaluación #{evaluacion.id}
                                         </p>
-                                        <h1 className="ti-title text-2xl md:text-3xl font-bold text-white leading-tight">
+                                        <h1 className="ti-title text-xl md:text-2xl font-bold text-white leading-tight line-clamp-2">
                                             {evaluacion.descripcion}
                                         </h1>
                                     </div>
