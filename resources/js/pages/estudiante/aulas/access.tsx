@@ -1,6 +1,6 @@
 import { Head, router } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
-import { entregaCreate } from '@/routes';
+
 import {
     BookOpen,
     CalendarRange,
@@ -16,6 +16,7 @@ import {
     AlertCircle
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { evaluacionesTurnIn } from '@/routes';
 
 interface Item {
     id: number;
@@ -23,8 +24,8 @@ interface Item {
     contenido?: string;
     fecha_limite?: string;
     created_at: string;
-    entregado?: boolean; // compatibilidad con versiones anteriores
-    calificacion?: number;
+    entregado?: boolean; 
+    calificacion?: number; 
     turned_in?: boolean;
     late?: boolean;
 }
@@ -358,7 +359,7 @@ export default function AulaAccess({ aula, timeline }: Props) {
                                                     {item.tipo === 'evaluacion' && !item.entregado && !overdue && (
                                                         <div className="mt-4 flex justify-end">
                                                             <button
-                                                                onClick={() => router.get(entregaCreate(item.id))}
+                                                                onClick={() => router.get(evaluacionesTurnIn(item.id))}
                                                                 className="btn-action px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl flex items-center gap-2 transition-colors"
                                                             >
                                                                 <ClipboardList size={13} />
@@ -371,7 +372,7 @@ export default function AulaAccess({ aula, timeline }: Props) {
                                                     {item.tipo === 'evaluacion' && item.entregado && (
                                                         <div className="mt-4 flex justify-end">
                                                             <button
-                                                                onClick={() => router.get(entregaCreate(item.id))}
+                                                                onClick={() => router.get(evaluacionesTurnIn(item.id))}
                                                                 className="btn-action px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl flex items-center gap-2 transition-colors"
                                                             >
                                                                 <CheckCircle2 size={13} />
