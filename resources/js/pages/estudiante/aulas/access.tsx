@@ -263,6 +263,10 @@ export default function AulaAccess({ aula, timeline }: Props) {
                                     const d = formatDateShort(item.created_at);
                                     const overdue = item.tipo === 'evaluacion' && item.fecha_limite && isOverdue(item.fecha_limite);
                                     
+                                    // Determinar el estado de entrega combinando ambas propiedades
+                                    const isTurnedIn = item.turned_in || item.entregado;
+                                    const isLate = item.late || false;
+                                    
                                     return (
                                         <div
                                             key={`${item.tipo}-${item.id}`}
@@ -294,19 +298,28 @@ export default function AulaAccess({ aula, timeline }: Props) {
                                                     </div>
 
                                                     {/* Estado de entrega (solo para evaluaciones) */}
-                                                    {item.tipo === 'evaluacion' && item.entregado !== undefined && (
+                                                    {item.tipo === 'evaluacion' && (
                                                         <div className={`flex items-center gap-1.5 text-[11px] font-medium px-2 py-1 rounded-full
-                                                            ${item.entregado 
-                                                                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' 
+                                                            ${isTurnedIn 
+                                                                ? isLate
+                                                                    ? 'bg-orange-50 text-orange-700 border border-orange-200'
+                                                                    : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                                                                 : overdue
                                                                     ? 'bg-red-50 text-red-700 border border-red-200'
                                                                     : 'bg-amber-50 text-amber-700 border border-amber-200'
                                                             }`}>
-                                                            {item.entregado ? (
-                                                                <>
-                                                                    <CheckCircle2 size={10} />
-                                                                    <span>Entregado</span>
-                                                                </>
+                                                            {isTurnedIn ? (
+                                                                isLate ? (
+                                                                    <>
+                                                                        <Clock size={10} />
+                                                                        <span>Entregado tarde</span>
+                                                                    </>
+                                                                ) : (
+                                                                    <>
+                                                                        <CheckCircle2 size={10} />
+                                                                        <span>Entregado</span>
+                                                                    </>
+                                                                )
                                                             ) : overdue ? (
                                                                 <>
                                                                     <AlertCircle size={10} />
@@ -355,31 +368,42 @@ export default function AulaAccess({ aula, timeline }: Props) {
                                                         </>
                                                     )}
 
-                                                    {/* Botón de entrega (solo evaluaciones no entregadas y no vencidas) */}
-                                                    {item.tipo === 'evaluacion' && !item.entregado && !overdue && (
-                                                        <div className="mt-4 flex justify-end">
-                                                            <button
-                                                                onClick={() => router.get(evaluacionesTurnIn(item.id))}
-                                                                className="btn-action px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl flex items-center gap-2 transition-colors"
-                                                            >
-                                                                <ClipboardList size={13} />
-                                                                Realizar Entrega
-                                                            </button>
-                                                        </div>
-                                                    )}
-
-                                                    {/* Botón de ver entrega (si ya entregó) */}
-                                                    {item.tipo === 'evaluacion' && item.entregado && (
-                                                        <div className="mt-4 flex justify-end">
-                                                            <button
-                                                                onClick={() => router.get(evaluacionesTurnIn(item.id))}
-                                                                className="btn-action px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl flex items-center gap-2 transition-colors"
-                                                            >
-                                                                <CheckCircle2 size={13} />
-                                                                Ver mi Entrega
-                                                            </button>
-                                                        </div>
-                                                    )}
+                                                    {/* Botón de acción para evaluaciones */}
+                                                    {item.tipo === 'evaluacion' && (
+    <div className="mt-4 flex justify-end">
+        <button
+            onClick={() => {
+                if (!(overdue && !isTurnedIn)) {
+                    router.get(evaluacionesTurnIn(item.id));
+                }
+            }}
+            className={`btn-action px-4 py-2 text-white text-xs font-semibold rounded-xl flex items-center gap-2 transition-colors
+                ${isTurnedIn
+                    ? 'bg-yellow-600 hover:bg-yellow-700'
+                    : overdue
+                        ? 'bg-gray-400 cursor-not-allowed opacity-50'
+                        : 'bg-blue-600 hover:bg-blue-700'
+                }`}
+        >
+            {isTurnedIn ? (
+                <>
+                    <PenLine size={13} />
+                    {isLate ? 'Ver/Editar Entrega' : 'Editar Entrega'}
+                </>
+            ) : overdue ? (
+                <>
+                    <AlertCircle size={13} />
+                    Fuera de plazo
+                </>
+            ) : (
+                <>
+                    <ClipboardList size={13} />
+                    Realizar Entrega
+                </>
+            )}
+        </button>
+    </div>
+)}
                                                 </div>
                                             </div>
                                         </div>
