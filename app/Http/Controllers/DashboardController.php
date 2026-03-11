@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use App\Models\Evaluacion;
+use App\Models\Post;
+use App\Models\Aula;
 
 class DashboardController extends Controller
 {
@@ -11,12 +14,89 @@ class DashboardController extends Controller
     {
         $user = auth()->user();
 
-        if($user->rol === 'A'){
+        if ($user->rol === 'A') {
             return Inertia::render('administrador/dashboard');
-        } else if($user->rol === 'P'){
+        } else if ($user->rol === 'P') {
             return Inertia::render('profesor/dashboard');
-        } else if($user->rol === 'E'){
-            return Inertia::render('estudiante/dashboard');
+        } else if ($user->rol === 'E') {
+
+            $aulas = $user->aulas()
+                ->with([
+                    'materia:codigo,nombre',
+                    'profesor:cedula,nombre,apellido'
+                ])->get(['aulas.id', 'materia_codigo', 'profesor_cedula', 'semestre']);
+
+            $cantidadAulas = $aulas->count();
+
+            $aulaIds = $aulas->pluck('id');
+
+            $evaluaciones = Evaluacion::whereIn('aula_id', $aulaIds)
+                ->with(['aula.materia:codigo,nombre'])
+                ->with([
+                    'usuarios' => function ($q) use ($user) {
+                        $q->where('usuario_cedula', $user->cedula);
+                    }
+                ])->get();
+
+            $evaluacionesTurnedIn = $evaluaciones->filter(function ($ev) {
+                return $ev->usuarios->isNotEmpty();
+            })->count();
+
+            $evaluacionesNoTurnedIn = $evaluaciones->filter(function ($ev) {
+                return $ev->usuarios->isEmpty();
+            })->count();
+
+            $evaluacionesOnTime = Evaluacion::whereIn('aula_id', $aulaIds)
+                ->where('fecha_limite', '>', now())
+                ->with('aula.materia:codigo,nombre')
+                ->orderBy('fecha_limite')
+                ->limit(10)
+                ->get();
+
+            $posts = Post::whereIn('aula_id', $aulaIds)
+                ->latest()
+                ->limit(10)
+                ->get()
+                ->map(function ($post) {
+                    return [
+                        'id' => $post->id,
+                        'tipo' => 'post',
+                        'contenido' => $post->contenido,
+                        'created_at' => $post->created_at,
+                    ];
+                });
+
+            $evaluacionesTimeLine = Evaluacion::whereIn('aula_id', $aulaIds)
+                ->latest()
+                ->limit(10)
+                ->get()
+                ->map(function ($ev) {
+                    return [
+                        'id' => $ev->id,
+                        'tipo' => 'evaluacion',
+                        'contenido' => $ev->descripcion,
+                        'created_at' => $ev->created_at,
+                        'fecha_limite' => $ev->fecha_limite,
+                    ];
+                });
+
+            $timeline = $posts
+                ->concat($evaluacionesTimeLine)
+                ->sortByDesc('created_at')
+                ->take(10)
+                ->values()
+                ->all();
+
+
+            return Inertia::render('estudiante/dashboard', [
+                'aulas' => $aulas,
+                'cantidadAulas' => $cantidadAulas,
+                'evaluacionesTurnedIn' => $evaluacionesTurnedIn,
+                'evaluacionesNoTurnedIn' => $evaluacionesNoTurnedIn,
+                'evaluacionesOnTime' => $evaluacionesOnTime,
+                'timeline' => $timeline
+            ]);
+
         } else {
             abort(403, message: 'Acceso no autorizado');
         }
