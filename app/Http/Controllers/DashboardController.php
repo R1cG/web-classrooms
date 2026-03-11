@@ -17,7 +17,36 @@ class DashboardController extends Controller
         if ($user->rol === 'A') {
             return Inertia::render('administrador/dashboard');
         } else if ($user->rol === 'P') {
-            return Inertia::render('profesor/dashboard');
+            $aulas = Aula::where('profesor_cedula', $user->cedula)
+                ->with('materia:codigo,nombre')
+                ->withCount('estudiantes as cantidad_estudiantes')
+                ->get(['id', 'materia_codigo', 'semestre', 'profesor_cedula']);
+
+            $cantidadAulas = $aulas->count();
+
+            $aulaIds = $aulas->pluck('id');
+
+            $cantidadEvaluaciones = Evaluacion::whereIn('aula_id', $aulaIds)->count();
+
+            $cantidadEstudiantes = \DB::table('aula_usuario')
+                ->whereIn('aula_id', $aulaIds)
+                ->distinct()
+                ->count('usuario_cedula');
+
+            $evaluacionesRecientes = Evaluacion::whereIn('aula_id', $aulaIds)
+                ->with('aula.materia:codigo,nombre')
+                ->latest()
+                ->limit(10)
+                ->get();
+
+            return Inertia::render('profesor/dashboard', [
+                'cantidadAulas' => $cantidadAulas,
+                'cantidadEvaluaciones' => $cantidadEvaluaciones,
+                'cantidadEstudiantes' => $cantidadEstudiantes,
+                'aulas' => $aulas,
+                'evaluacionesRecientes' => $evaluacionesRecientes
+            ]);
+
         } else if ($user->rol === 'E') {
 
             $aulas = $user->aulas()
