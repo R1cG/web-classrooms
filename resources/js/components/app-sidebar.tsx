@@ -1,4 +1,4 @@
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import { BookOpen, Folder, LayoutGrid, BookA, Users, LayoutDashboard } from 'lucide-react';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
@@ -13,8 +13,15 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
-import type { NavItem } from '@/types';
+import type { NavItem, SharedData } from '@/types';
 import AppLogo from './app-logo';
+
+
+const rolePermissions = {
+    A: ['Dashboard', 'Aulas', 'Usuarios', 'Materias'], 
+    P: ['Dashboard', 'Aulas'],
+    E: ['Dashboard', 'Aulas'], 
+};
 
 const mainNavItems: NavItem[] = [
     {
@@ -39,11 +46,21 @@ const mainNavItems: NavItem[] = [
     },
 ];
 
-const footerNavItems: NavItem[] = [
-    
-];
+const footerNavItems: NavItem[] = [];
 
 export function AppSidebar() {
+    const { auth } = usePage<SharedData>().props;
+    const userRole = auth.user?.rol; // 'A', 'P' o 'E'
+
+    // Filtrar items según el rol del usuario
+    const filteredNavItems = mainNavItems.filter(item => {
+        if (!userRole) return false;
+        
+        // Obtener los títulos permitidos para este rol
+        const allowedTitles = rolePermissions[userRole as keyof typeof rolePermissions] || [];
+        return allowedTitles.includes(item.title);
+    });
+
     return (
         <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>
@@ -59,7 +76,7 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
-                <NavMain items={mainNavItems} />
+                <NavMain items={filteredNavItems} />
             </SidebarContent>
 
             <SidebarFooter>
