@@ -7,6 +7,8 @@ use Inertia\Inertia;
 use App\Models\Evaluacion;
 use App\Models\Post;
 use App\Models\Aula;
+use App\Models\User;
+use App\Models\Materia;
 
 class DashboardController extends Controller
 {
@@ -15,7 +17,27 @@ class DashboardController extends Controller
         $user = auth()->user();
 
         if ($user->rol === 'A') {
-            return Inertia::render('administrador/dashboard');
+            $totalUsuarios = User::count();
+
+            $totalEstudiantes = User::where('rol', 'E')->count();
+            $totalProfesores = User::where('rol', 'P')->count();
+            $totalAdmins = User::where('rol', 'A')->count();
+
+            $totalAulas = Aula::count();
+
+            $totalEvaluaciones = Evaluacion::count();
+
+            $totalMaterias = Materia::count();
+
+            return Inertia::render('administrador/dashboard', [
+                'totalUsuarios' => $totalUsuarios,
+                'totalEstudiantes' => $totalEstudiantes,
+                'totalProfesores' => $totalProfesores,
+                'totalAdmins' => $totalAdmins,
+                'totalAulas' => $totalAulas,
+                'totalEvaluaciones' => $totalEvaluaciones,
+                'totalMaterias' => $totalMaterias
+            ]);
         } else if ($user->rol === 'P') {
             $aulas = Aula::where('profesor_cedula', $user->cedula)
                 ->with('materia:codigo,nombre')
