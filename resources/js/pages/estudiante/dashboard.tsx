@@ -83,10 +83,12 @@ interface TimelineItem {
     calificacion?: number;
     turned_in?: boolean;
     late?: boolean;
+    materia_nombre?: string; 
     entrega?: {
         url: string;
         updated_at: string;
     } | null;
+    
 }
 
 interface Props {
@@ -154,7 +156,7 @@ export default function Dashboard({
     // Limitar arrays para mostrar
     const aulasMostradas = aulas.slice(0, 3);
     const evaluacionesMostradas = evaluacionesOnTime.slice(0, 3);
-    const timelineMostradas = timeline.slice(0, 5);
+    const timelineMostradas = timeline.slice(0, 4);
 
     const handleEvaluacionClick = (evaluacion: Evaluacion) => {
         setTurnInTarget({
@@ -382,7 +384,6 @@ export default function Dashboard({
                         </div>
                     </div>
 
-                    {/* ── STATS CARDS MEJORADAS ── */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
                         {/* Aulas inscritas */}
                         <div
@@ -404,7 +405,7 @@ export default function Dashboard({
                             </div>
                         </div>
 
-                        {/* Evaluaciones entregadas */}
+                      
                         <div
                             className={`stat-card bg-white rounded-2xl p-6 shadow-lg dashboard-card-enter ${mounted ? 'visible' : ''}`}
                             style={{ transitionDelay: '100ms' }}
@@ -445,7 +446,7 @@ export default function Dashboard({
                         </div>
                     </div>
 
-                    {/* ── MIS AULAS CON NUEVO DISEÑO ── */}
+        
                     <div
                         className={`bg-white rounded-3xl border border-slate-200/80 p-7 shadow-xl dashboard-card-enter ${mounted ? 'visible' : ''}`}
                         style={{ transitionDelay: '200ms' }}
@@ -728,6 +729,13 @@ export default function Dashboard({
                                                         <span className="text-xs text-slate-400">{d.time}</span>
                                                     </div>
                                                     <p className="text-sm text-slate-700 font-medium">{truncateText(item.contenido, 60)}</p>
+                                                    {item.materia_nombre && (
+    <p className="text-xs text-blue-500 font-medium mt-0.5 flex items-center gap-1">
+        <BookOpen size={10} />
+        {item.materia_nombre}
+    </p>
+)}
+
                                                     <p className="text-xs text-slate-400 mt-1">{d.day} {d.month}</p>
                                                     
                                                    

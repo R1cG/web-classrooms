@@ -114,6 +114,7 @@ class DashboardController extends Controller
                         'tipo' => 'post',
                         'contenido' => $post->contenido,
                         'created_at' => $post->created_at,
+                        'materia_nombre' => $post->aula->materia->nombre,
                     ];
                 });
 
@@ -128,6 +129,7 @@ class DashboardController extends Controller
                         'contenido' => $ev->descripcion,
                         'created_at' => $ev->created_at,
                         'fecha_limite' => $ev->fecha_limite,
+                        'materia_nombre' => $ev->aula->materia->nombre,
                     ];
                 });
 
