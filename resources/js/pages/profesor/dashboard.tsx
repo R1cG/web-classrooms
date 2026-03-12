@@ -26,7 +26,8 @@ import {
     UserCog,
     BarChart3,
     PieChart,
-    Layers
+    Layers,
+    User
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { aulasAccess } from '@/routes';
@@ -37,9 +38,11 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: dashboard().url,
     },
 ];
-   const handleDoubleClick = (id: number) => {
-        router.get(aulasAccess(id).url);
-    };
+
+const handleDoubleClick = (id: number) => {
+    router.get(aulasAccess(id).url);
+};
+
 interface Aula {
     id: number;
     semestre: string;
@@ -105,6 +108,10 @@ export default function Dashboard({
         return text.substring(0, maxLength) + '...';
     };
 
+    // Limitar arrays para mostrar
+    const aulasMostradas = aulas.slice(0, 3);
+    const evaluacionesMostradas = evaluacionesRecientes.slice(0, 3);
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Profesor Dashboard — UDO" />
@@ -158,13 +165,12 @@ export default function Dashboard({
                     50% { opacity: 0.8; transform: scale(1.1); }
                 }
 
-                .aula-card {
+                .aula-card-nuevo {
                     transition: all 0.3s ease;
-                    border-left: 4px solid #f59e0b;
                     background: white;
                 }
-                .aula-card:hover {
-                    transform: translateY(-4px);
+                .aula-card-nuevo:hover {
+                    transform: scale(1.02);
                     box-shadow: 0 20px 30px -10px rgba(0,0,0,0.15);
                 }
 
@@ -192,6 +198,14 @@ export default function Dashboard({
                 .glass-effect {
                     backdrop-filter: blur(8px);
                     background: rgba(255, 255, 255, 0.9);
+                }
+
+                .ver-mas-link {
+                    transition: all 0.2s ease;
+                }
+                .ver-mas-link:hover {
+                    gap: 0.75rem;
+                    color: #f59e0b;
                 }
             `}
             </style>
@@ -287,7 +301,7 @@ export default function Dashboard({
                             </div>
                         </div>
 
-                        {/* Estudiantes únicos */}
+           
                         <div
                             className={`stat-card bg-white rounded-2xl p-6 shadow-lg dashboard-card-enter ${mounted ? 'visible' : ''}`}
                             style={{ transitionDelay: '150ms' }}
@@ -308,7 +322,6 @@ export default function Dashboard({
                         </div>
                     </div>
 
-                    {/* ── MIS AULAS ── */}
                     <div
                         className={`bg-white rounded-3xl border border-slate-200/80 p-7 shadow-xl dashboard-card-enter ${mounted ? 'visible' : ''}`}
                         style={{ transitionDelay: '200ms' }}
@@ -320,9 +333,19 @@ export default function Dashboard({
                                 </div>
                                 <h2 className="dashboard-title text-xl font-semibold text-[#0b1f3a]">Mis Aulas</h2>
                             </div>
-                            <span className="badge bg-amber-100 text-amber-700 text-xs font-semibold px-3 py-1.5 rounded-full">
-                                {cantidadAulas} aula{cantidadAulas !== 1 ? 's' : ''}
-                            </span>
+                            <div className="flex items-center gap-3">
+                                <span className="badge bg-slate-100 text-slate-700 text-xs font-semibold px-3 py-1.5 rounded-full">
+                                    Mostrando {Math.min(3, aulas.length)} de {cantidadAulas}
+                                </span>
+                                {cantidadAulas > 3 && (
+                                    <a 
+                                        href="/aulas" 
+                                        className="text-xs text-amber-600 hover:text-amber-700 font-medium inline-flex items-center gap-1 ver-mas-link transition-all"
+                                    >
+                                        Ver todas <ChevronRight size={12} />
+                                    </a>
+                                )}
+                            </div>
                         </div>
 
                         {aulas.length === 0 ? (
@@ -336,45 +359,79 @@ export default function Dashboard({
                                 </p>
                             </div>
                         ) : (
-                            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                                {aulas.map((aula, index) => (
-                                    <div
-                                        key={aula.id}
-                                        className="aula-card rounded-xl border border-slate-200 p-5 hover:shadow-xl cursor-pointer group"
-                                        style={{ transitionDelay: `${250 + index * 50}ms` }}
-                                        onClick={() => handleDoubleClick(aula.id)}
-                                    >
-                                        <div className="flex items-start gap-3 mb-3">
-                                            <div className="w-12 h-12 bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                                                <BookOpen size={18} className="text-amber-600" />
+                            <>
+                                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                                    {aulasMostradas.map((aula, index) => (
+                                        <div
+                                            key={aula.id}
+                                            className="cursor-pointer bg-white border border-slate-200 rounded-2xl shadow-md hover:shadow-xl hover:scale-[1.02] transition-all duration-300 overflow-hidden group aula-card-nuevo"
+                                            onClick={() => handleDoubleClick(aula.id)}
+                                            title="Doble clic para acceder al aula"
+                                            style={{ transitionDelay: `${250 + index * 50}ms` }}
+                                        >
+                                            {/* Header */}
+                                            <div className="bg-[#0b1f3a] px-5 py-4 flex justify-between items-center">
+                                                <div className="flex items-center gap-2.5">
+                                                    <CalendarRange size={16} className="text-[#f59e0b]" />
+                                                    <span className="text-white text-sm font-semibold">
+                                                        {aula.semestre}
+                                                    </span>
+                                                </div>
                                             </div>
-                                            <div className="flex-1">
-                                                <h3 className="font-bold text-slate-800 text-base leading-tight">
-                                                    {aula.materia.nombre}
-                                                </h3>
-                                                <p className="text-xs text-slate-400 font-mono mt-0.5">
-                                                    {aula.materia_codigo || 'Código no disponible'}
-                                                </p>
-                                            </div>
-                                        </div>
 
-                                        <div className="space-y-2 text-sm border-t border-slate-100 pt-3 mt-1">
-                                            <div className="flex items-center gap-2 text-slate-600">
-                                                <Users size={14} className="text-slate-400" />
-                                                <span className="text-xs">
-                                                    {aula.cantidad_estudiantes} estudiante{aula.cantidad_estudiantes !== 1 ? 's' : ''}
-                                                </span>
-                                            </div>
-                                            <div className="flex items-center gap-2 text-slate-600">
-                                                <CalendarRange size={14} className="text-slate-400" />
-                                                <span className="text-xs">Semestre: {aula.semestre}</span>
+                                            {/* Content */}
+                                            <div className="p-5 space-y-4">
+                                                {/* Materia */}
+                                                <div className="flex items-start gap-3">
+                                                    <div className="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center">
+                                                        <BookOpen size={16} className="text-[#f59e0b]" />
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className="text-xs text-slate-500">Materia</p>
+                                                        <p className="font-semibold text-slate-800 text-base truncate">
+                                                            {aula.materia.nombre}
+                                                        </p>
+                                                        <p className="text-xs text-slate-400 font-mono truncate">
+                                                            {aula.materia_codigo || 'Código no disponible'}
+                                                        </p>
+                                                    </div>
+                                                </div>
+
+                                                {/* Estudiantes */}
+                                                <div className="flex items-start gap-3">
+                                                    <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center">
+                                                        <Users size={16} className="text-blue-600" />
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-xs text-slate-500">Estudiantes</p>
+                                                        <p className="font-semibold text-slate-800 text-sm">
+                                                            {aula.cantidad_estudiantes} estudiante{aula.cantidad_estudiantes !== 1 ? 's' : ''}
+                                                        </p>
+                                                    </div>
+                                                </div>
+
+                                                {/* Indicador de acceso */}
+                                                <div className="pt-2 flex justify-end">
+                                                    <span className="text-xs text-amber-600 font-medium inline-flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                        Acceder al aula <ChevronRight size={10} />
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
-                                        
-                                       
+                                    ))}
+                                </div>
+                                
+                                {cantidadAulas > 3 && (
+                                    <div className="mt-6 text-center">
+                                        <a 
+                                            href="/aulas" 
+                                            className="inline-flex items-center gap-2 text-sm text-amber-600 hover:text-amber-700 font-medium bg-amber-50 hover:bg-amber-100 px-5 py-2.5 rounded-xl transition-all"
+                                        >
+                                            Ver las {cantidadAulas} aulas <ChevronRight size={14} />
+                                        </a>
                                     </div>
-                                ))}
-                            </div>
+                                )}
+                            </>
                         )}
                     </div>
 
@@ -391,9 +448,19 @@ export default function Dashboard({
                                     </div>
                                     <h2 className="dashboard-title text-xl font-semibold text-[#0b1f3a]">Últimas Evaluaciones</h2>
                                 </div>
-                                <span className="badge bg-blue-100 text-blue-700 text-xs font-semibold px-3 py-1.5 rounded-full">
-                                    {evaluacionesRecientes.length} recientes
-                                </span>
+                                <div className="flex items-center gap-3">
+                                    <span className="badge bg-blue-100 text-blue-700 text-xs font-semibold px-3 py-1.5 rounded-full">
+                                        Mostrando {Math.min(3, evaluacionesRecientes.length)} de {evaluacionesRecientes.length}
+                                    </span>
+                                    {evaluacionesRecientes.length > 3 && (
+                                        <a 
+                                            href="/evaluaciones" 
+                                            className="text-xs text-blue-600 hover:text-blue-700 font-medium inline-flex items-center gap-1 ver-mas-link transition-all"
+                                        >
+                                            Ver todas <ChevronRight size={12} />
+                                        </a>
+                                    )}
+                                </div>
                             </div>
 
                             {evaluacionesRecientes.length === 0 ? (
@@ -407,38 +474,63 @@ export default function Dashboard({
                                     </p>
                                 </div>
                             ) : (
-                                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    {evaluacionesRecientes.map((ev, index) => {
-                                        const diasRestantes = Math.ceil((new Date(ev.fecha_limite).getTime() - new Date().getTime()) / (1000 * 3600 * 24));
-                                        
-                                        return (
-                                            <div
-                                                key={ev.id}
-                                                className="evaluacion-card rounded-xl border border-slate-200 p-5 hover:shadow-lg"
-                                            >
-                                                <div className="flex items-start gap-3 mb-3">
-                                                    <div className="w-10 h-10 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl flex items-center justify-center">
-                                                        <FileText size={18} className="text-blue-600" />
-                                                    </div>
-                                                    <div className="flex-1">
-                                                        <h3 className="font-bold text-slate-800">{truncateText(ev.descripcion, 40)}</h3>
-                                                        <p className="text-xs text-slate-500 mt-1">{ev.aula.materia.nombre}</p>
-                                                    </div>
-                                                </div>
-
-                                                <div className="space-y-2 border-t border-slate-100 pt-3">
-                                                    <div className="flex items-center justify-between">
-                                                        <div className="flex items-center gap-2 text-xs text-slate-600">
-                                                            <Calendar size={12} />
-                                                            <span>{formatDate(ev.fecha_limite)}</span>
+                                <>
+                                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        {evaluacionesMostradas.map((ev, index) => {
+                                            const diasRestantes = Math.ceil((new Date(ev.fecha_limite).getTime() - new Date().getTime()) / (1000 * 3600 * 24));
+                                            
+                                            return (
+                                                <div
+                                                    key={ev.id}
+                                                    className="evaluacion-card rounded-xl border border-slate-200 p-5 hover:shadow-lg"
+                                                >
+                                                    <div className="flex items-start gap-3 mb-3">
+                                                        <div className="w-10 h-10 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl flex items-center justify-center">
+                                                            <FileText size={18} className="text-blue-600" />
                                                         </div>
-                                                       
+                                                        <div className="flex-1 min-w-0">
+                                                            <h3 className="font-bold text-slate-800 truncate">{truncateText(ev.descripcion, 40)}</h3>
+                                                            <p className="text-xs text-slate-500 mt-1 truncate">{ev.aula.materia.nombre}</p>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="space-y-3 border-t border-slate-100 pt-3">
+                                                        <div className="flex items-center justify-between">
+                                                            <div className="flex items-center gap-2 text-xs text-slate-600">
+                                                                <Calendar size={12} />
+                                                                <span>{formatDate(ev.fecha_limite)}</span>
+                                                            </div>
+                                                            <span className={`text-xs font-semibold px-2 py-1 rounded-full ${
+                                                                diasRestantes < 0 ? 'bg-red-100 text-red-700' :
+                                                                diasRestantes <= 3 ? 'bg-amber-100 text-amber-700' :
+                                                                'bg-green-100 text-green-700'
+                                                            }`}>
+                                                                {diasRestantes < 0 ? 'Vencida' :
+                                                                 diasRestantes === 0 ? 'Hoy' :
+                                                                 diasRestantes === 1 ? 'Mañana' :
+                                                                 `${diasRestantes} días`}
+                                                            </span>
+                                                        </div>
+                                                        
+                                                        {ev.entregas !== undefined && ev.pendientes !== undefined && (
+                                                            <div className="flex items-center justify-between text-xs">
+                                                                <div className="flex items-center gap-2">
+                                                                    <CheckCircle2 size={12} className="text-emerald-500" />
+                                                                    <span className="text-slate-600">Entregas: {ev.entregas}</span>
+                                                                </div>
+                                                                <div className="flex items-center gap-2">
+                                                                    <Clock size={12} className="text-amber-500" />
+                                                                    <span className="text-slate-600">Pendientes: {ev.pendientes}</span>
+                                                                </div>
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                    
+                                </>
                             )}
                         </div>
                     </div>

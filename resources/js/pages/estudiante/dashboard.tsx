@@ -1,6 +1,7 @@
 import { Head, router } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import { dashboard } from '@/routes';
+import TurnIn from '@/pages/estudiante/evaluaciones/turn_in';
 import type { BreadcrumbItem } from '@/types';
 import {
     BookOpen,
@@ -21,19 +22,22 @@ import {
     ChevronRight,
     Calendar,
     Bell,
-    Star
+    Star,
+    User
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { aulasAccess } from '@/routes';
+
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Dashboard',
         href: dashboard().url,
     },
 ];
-    const handleDoubleClick = (id: number) => {
-        router.get(aulasAccess(id).url);
-    };
+
+const handleDoubleClick = (id: number) => {
+    router.get(aulasAccess(id).url);
+};
 
 interface Aula {
     id: number;
@@ -44,6 +48,7 @@ interface Aula {
     profesor: {
         nombre: string;
         apellido: string;
+        cedula?: string;
     };
     materia_codigo?: string;
     cantidad_estudiantes?: number;
@@ -109,6 +114,12 @@ export default function Dashboard({
 }: Props) {
     const [mounted, setMounted] = useState(false);
 
+    // Modal: entregar / editar entrega
+    const [turnInTarget, setTurnInTarget] = useState<{
+        evaluacion: { id: number; contenido?: string; fecha_limite?: string };
+        entrega?: { url: string; updated_at: string } | null;
+    } | null>(null);
+
     useEffect(() => {
         const t = setTimeout(() => setMounted(true), 50);
         return () => clearTimeout(t);
@@ -138,6 +149,22 @@ export default function Dashboard({
     const truncateText = (text: string, maxLength: number = 60) => {
         if (text.length <= maxLength) return text;
         return text.substring(0, maxLength) + '...';
+    };
+
+    // Limitar arrays para mostrar
+    const aulasMostradas = aulas.slice(0, 3);
+    const evaluacionesMostradas = evaluacionesOnTime.slice(0, 3);
+    const timelineMostradas = timeline.slice(0, 5);
+
+    const handleEvaluacionClick = (evaluacion: Evaluacion) => {
+        setTurnInTarget({
+            evaluacion: {
+                id: evaluacion.id,
+                contenido: evaluacion.descripcion,
+                fecha_limite: evaluacion.fecha_limite,
+            },
+            entrega: evaluacion.entrega ?? null,
+        });
     };
 
     return (
@@ -193,13 +220,12 @@ export default function Dashboard({
                     50% { opacity: 0.8; transform: scale(1.1); }
                 }
 
-                .aula-card {
+                .aula-card-nuevo {
                     transition: all 0.3s ease;
-                    border-left: 4px solid #f59e0b;
                     background: white;
                 }
-                .aula-card:hover {
-                    transform: translateY(-4px);
+                .aula-card-nuevo:hover {
+                    transform: scale(1.02);
                     box-shadow: 0 20px 30px -10px rgba(0,0,0,0.15);
                 }
 
@@ -207,10 +233,12 @@ export default function Dashboard({
                     transition: all 0.3s ease;
                     border-left: 4px solid #3b82f6;
                     background: white;
+                    cursor: pointer;
                 }
                 .evaluacion-card:hover {
                     transform: translateY(-2px);
-                    box-shadow: 0 12px 25px -8px rgba(0,0,0,0.1);
+                    box-shadow: 0 12px 25px -8px rgba(0,0,0,0.15);
+                    border-left-color: #2563eb;
                 }
 
                 .timeline-dot-post {
@@ -278,6 +306,21 @@ export default function Dashboard({
                 .glass-effect {
                     backdrop-filter: blur(8px);
                     background: rgba(255, 255, 255, 0.9);
+                }
+
+                .ver-mas-link {
+                    transition: all 0.2s ease;
+                }
+                .ver-mas-link:hover {
+                    gap: 0.75rem;
+                    color: #f59e0b;
+                }
+
+                .evaluacion-clickable {
+                    transition: all 0.2s ease;
+                }
+                .evaluacion-clickable:active {
+                    transform: scale(0.98);
                 }
             `}
             </style>
@@ -402,7 +445,7 @@ export default function Dashboard({
                         </div>
                     </div>
 
-                    {/* ── MIS AULAS ── */}
+                    {/* ── MIS AULAS CON NUEVO DISEÑO ── */}
                     <div
                         className={`bg-white rounded-3xl border border-slate-200/80 p-7 shadow-xl dashboard-card-enter ${mounted ? 'visible' : ''}`}
                         style={{ transitionDelay: '200ms' }}
@@ -414,9 +457,19 @@ export default function Dashboard({
                                 </div>
                                 <h2 className="dashboard-title text-xl font-semibold text-[#0b1f3a]">Mis Aulas</h2>
                             </div>
-                            <span className="badge bg-slate-100 text-slate-700 text-xs font-semibold px-3 py-1.5 rounded-full">
-                                {cantidadAulas} aula{cantidadAulas !== 1 ? 's' : ''}
-                            </span>
+                            <div className="flex items-center gap-3">
+                                <span className="badge bg-slate-100 text-slate-700 text-xs font-semibold px-3 py-1.5 rounded-full">
+                                    Mostrando {Math.min(3, aulas.length)} de {cantidadAulas}
+                                </span>
+                                {cantidadAulas > 3 && (
+                                    <a 
+                                        href="/aulas" 
+                                        className="text-xs text-amber-600 hover:text-amber-700 font-medium inline-flex items-center gap-1 ver-mas-link transition-all"
+                                    >
+                                        Ver todas <ChevronRight size={12} />
+                                    </a>
+                                )}
+                            </div>
                         </div>
 
                         {aulas.length === 0 ? (
@@ -430,45 +483,79 @@ export default function Dashboard({
                                 </p>
                             </div>
                         ) : (
-                            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                                {aulas.map((aula, index) => (
-                                    <div
-                                        key={aula.id}
-                                        className="aula-card rounded-xl border border-slate-200 p-5 hover:shadow-xl cursor-pointer group"
-                                        style={{ transitionDelay: `${250 + index * 50}ms` }}
-                                        onClick={() => handleDoubleClick(aula.id)}
-                                    >
-                                        <div className="flex items-start gap-3 mb-3">
-                                            <div className="w-12 h-12 bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                                                <BookOpen size={18} className="text-amber-600" />
+                            <>
+                                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                                    {aulasMostradas.map((aula, index) => (
+                                        <div
+                                            key={aula.id}
+                                            onClick={() => handleDoubleClick(aula.id)}
+                                            className="cursor-pointer bg-white border border-slate-200 rounded-2xl shadow-md hover:shadow-xl hover:scale-[1.02] transition-all duration-300 overflow-hidden group aula-card-nuevo"
+                                            title="Doble clic para acceder al aula"
+                                            style={{ transitionDelay: `${250 + index * 50}ms` }}
+                                        >
+                                            {/* Header */}
+                                            <div className="bg-[#0b1f3a] px-5 py-4 flex justify-between items-center">
+                                                <div className="flex items-center gap-2.5">
+                                                    <CalendarRange size={16} className="text-[#f59e0b]" />
+                                                    <span className="text-white text-sm font-semibold">
+                                                        {aula.semestre}
+                                                    </span>
+                                                </div>
                                             </div>
-                                            <div className="flex-1">
-                                                <h3 className="font-bold text-slate-800 text-base leading-tight">
-                                                    {aula.materia.nombre}
-                                                </h3>
-                                                <p className="text-xs text-slate-400 font-mono mt-0.5">
-                                                    {aula.materia_codigo || 'Código no disponible'}
-                                                </p>
-                                            </div>
-                                        </div>
 
-                                        <div className="space-y-2 text-sm border-t border-slate-100 pt-3 mt-1">
-                                            <div className="flex items-center gap-2 text-slate-600">
-                                                <GraduationCap size={14} className="text-slate-400" />
-                                                <span className="text-xs">
-                                                    Prof. {aula.profesor.nombre} {aula.profesor.apellido}
-                                                </span>
-                                            </div>
-                                            <div className="flex items-center gap-2 text-slate-600">
-                                                <CalendarRange size={14} className="text-slate-400" />
-                                                <span className="text-xs">Semestre: {aula.semestre}</span>
+                                            {/* Content */}
+                                            <div className="p-5 space-y-4">
+
+                                                {/* Materia */}
+                                                <div className="flex items-start gap-3">
+                                                    <div className="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center">
+                                                        <BookOpen size={16} className="text-[#f59e0b]" />
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-xs text-slate-500">Materia</p>
+                                                        <p className="font-semibold text-slate-800 text-base">
+                                                            {aula.materia?.nombre ?? '—'}
+                                                        </p>
+                                                        <p className="text-xs text-slate-400 font-mono">
+                                                            {aula.materia_codigo || 'Código no disponible'}
+                                                        </p>
+                                                    </div>
+                                                </div>
+
+                                                {/* Profesor */}
+                                                <div className="flex items-start gap-3">
+                                                    <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center">
+                                                        <User size={16} className="text-blue-600" />
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-xs text-slate-500">Profesor</p>
+                                                        <p className="font-semibold text-slate-800 text-sm">
+                                                            {aula.profesor
+                                                                ? `${aula.profesor.nombre} ${aula.profesor.apellido}`
+                                                                : '—'}
+                                                        </p>
+                                                        <p className="text-xs text-slate-400">
+                                                            C.I: {aula.profesor?.cedula ?? '—'}
+                                                        </p>
+                                                    </div>
+                                                </div>
+
                                             </div>
                                         </div>
-                                        
-                                        
+                                    ))}
+                                </div>
+                                
+                                {cantidadAulas > 3 && (
+                                    <div className="mt-6 text-center">
+                                        <a 
+                                            href="/aulas" 
+                                            className="inline-flex items-center gap-2 text-sm text-amber-600 hover:text-amber-700 font-medium bg-amber-50 hover:bg-amber-100 px-5 py-2.5 rounded-xl transition-all"
+                                        >
+                                            Ver las {cantidadAulas} aulas <ChevronRight size={14} />
+                                        </a>
                                     </div>
-                                ))}
-                            </div>
+                                )}
+                            </>
                         )}
                     </div>
 
@@ -486,9 +573,7 @@ export default function Dashboard({
                                     </div>
                                     <h2 className="dashboard-title text-xl font-semibold text-[#0b1f3a]">Próximas Evaluaciones</h2>
                                 </div>
-                                <span className="badge bg-amber-100 text-amber-700 text-xs font-semibold px-3 py-1.5 rounded-full">
-                                    {evaluacionesOnTime.length} próximas
-                                </span>
+                               
                             </div>
 
                             {evaluacionesOnTime.length === 0 ? (
@@ -503,14 +588,16 @@ export default function Dashboard({
                                 </div>
                             ) : (
                                 <div className="space-y-4">
-                                    {evaluacionesOnTime.map((ev, index) => {
-                                        const overdue = isOverdue(ev.fecha_limite);
+                                    {evaluacionesMostradas.map((ev, index) => {
                                         const diasRestantes = Math.ceil((new Date(ev.fecha_limite).getTime() - new Date().getTime()) / (1000 * 3600 * 24));
+                                        const isTurnedIn = ev.turned_in || ev.entregado;
+                                        const isLate = ev.late || false;
                                         
                                         return (
                                             <div
                                                 key={ev.id}
-                                                className="evaluacion-card rounded-xl border border-slate-200 p-4 hover:shadow-lg"
+                                                onClick={() => handleEvaluacionClick(ev)}
+                                                className="evaluacion-card rounded-xl border border-slate-200 p-4 hover:shadow-lg evaluacion-clickable"
                                                 style={{ animationDelay: `${350 + index * 50}ms` }}
                                             >
                                                 <div className="flex items-start gap-3">
@@ -519,31 +606,55 @@ export default function Dashboard({
                                                     </div>
                                                     <div className="flex-1 min-w-0">
                                                         <div className="flex items-start justify-between gap-2">
-                                                            <div>
+                                                            <div className="flex-1">
                                                                 <p className="font-bold text-slate-800">{truncateText(ev.descripcion, 50)}</p>
                                                                 <p className="text-xs text-slate-500 mt-1">{ev.aula.materia.nombre}</p>
+                                                                
+                                                                {/* Estado de entrega */}
+                                                                {isTurnedIn && (
+                                                                    <div className={`inline-flex items-center gap-1.5 mt-2 text-xs px-2 py-1 rounded-full ${
+                                                                        isLate
+                                                                            ? 'bg-orange-50 text-orange-700 border border-orange-200'
+                                                                            : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                                                    }`}>
+                                                                        {isLate ? (
+                                                                            <><Clock size={10} /><span>Entregado tarde</span></>
+                                                                        ) : (
+                                                                            <><CheckCircle2 size={10} /><span>Entregado</span></>
+                                                                        )}
+                                                                    </div>
+                                                                )}
                                                             </div>
                                                             <span className={`text-xs font-semibold px-2.5 py-1 rounded-full whitespace-nowrap ${
-                                                                diasRestantes <= 2 
-                                                                    ? 'bg-red-100 text-red-700'
-                                                                    : diasRestantes <= 5
-                                                                        ? 'bg-amber-100 text-amber-700'
-                                                                        : 'bg-green-100 text-green-700'
+                                                                isTurnedIn
+                                                                    ? 'bg-emerald-100 text-emerald-700'
+                                                                    : diasRestantes <= 2 
+                                                                        ? 'bg-red-100 text-red-700'
+                                                                        : diasRestantes <= 5
+                                                                            ? 'bg-amber-100 text-amber-700'
+                                                                            : 'bg-green-100 text-green-700'
                                                             }`}>
-                                                                {diasRestantes === 0 ? 'Hoy' : 
+                                                                {isTurnedIn ? 'Completada' : 
+                                                                 diasRestantes === 0 ? 'Hoy' : 
                                                                  diasRestantes === 1 ? 'Mañana' : 
                                                                  `${diasRestantes} días`}
                                                             </span>
                                                         </div>
-                                                        <div className="flex items-center gap-3 mt-2 text-xs">
+                                                        
+                                                        {/* Fecha límite */}
+                                                        <div className="flex items-center gap-3 mt-3 text-xs">
                                                             <div className="flex items-center gap-1 text-slate-500">
                                                                 <Calendar size={12} />
                                                                 <span>{formatDate(ev.fecha_limite)}</span>
                                                             </div>
-                                                            <div className="flex items-center gap-1 text-slate-500">
-                                                                <Clock size={12} />
-                                                                <span>{new Date(ev.fecha_limite).toLocaleTimeString().slice(0,5)}</span>
-                                                            </div>
+                                                        </div>
+
+                                                        {/* Indicador de acción */}
+                                                        <div className="mt-3 flex justify-end">
+                                                            <span className="text-xs text-blue-600 font-medium inline-flex items-center gap-1">
+                                                                {isTurnedIn ? 'Ver/Editar entrega' : 'Realizar entrega'}
+                                                                <ChevronRight size={10} />
+                                                            </span>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -552,6 +663,7 @@ export default function Dashboard({
                                     })}
                                 </div>
                             )}
+                        
                         
                         </div>
 
@@ -567,9 +679,12 @@ export default function Dashboard({
                                     </div>
                                     <h2 className="dashboard-title text-xl font-semibold text-[#0b1f3a]">Actividad Reciente</h2>
                                 </div>
-                                {timeline.length > 0 && (
-                                    <Sparkles size={18} className="text-amber-400 animate-pulse" />
-                                )}
+                                <div className="flex items-center gap-3">
+                                   
+                                    {timeline.length > 4 && (
+                                        <Sparkles size={18} className="text-amber-400 animate-pulse" />
+                                    )}
+                                </div>
                             </div>
 
                             {timeline.length === 0 ? (
@@ -584,12 +699,13 @@ export default function Dashboard({
                                 </div>
                             ) : (
                                 <div className="space-y-4">
-                                    {timeline.slice(0, 5).map((item) => {
+                                    {timelineMostradas.map((item) => {
                                         const d = formatDateShort(item.created_at);
                                         return (
                                             <div
                                                 key={`${item.tipo}-${item.id}`}
-                                                className="item-card flex items-start gap-4 p-3 bg-slate-50 rounded-xl hover:bg-slate-100 transition-all"
+                                                className="item-card flex items-start gap-4 p-3 bg-slate-50 rounded-xl hover:bg-slate-100 transition-all cursor-pointer"
+                                                
                                             >
                                                 <div className="relative">
                                                     <div className={`w-3 h-3 rounded-full mt-1.5 ${
@@ -613,81 +729,29 @@ export default function Dashboard({
                                                     </div>
                                                     <p className="text-sm text-slate-700 font-medium">{truncateText(item.contenido, 60)}</p>
                                                     <p className="text-xs text-slate-400 mt-1">{d.day} {d.month}</p>
+                                                    
+                                                   
                                                 </div>
                                             </div>
                                         );
                                     })}
                                 </div>
                             )}
+                        
                             
-                            {timeline.length > 5 && (
-                                <div className="mt-5 text-center">
-                                    <button className="text-xs text-purple-600 hover:text-purple-700 font-medium inline-flex items-center gap-1 transition-all hover:gap-2">
-                                        Ver más actividad <ChevronRight size={12} />
-                                    </button>
-                                </div>
-                            )}
                         </div>
                     </div>
 
-                    {/* ── PROGRESO ACADÉMICO ── */}
-                    {progreso && (
-                        <div
-                            className={`mt-8 bg-gradient-to-br from-[#0b1f3a] via-[#0f2744] to-[#1a2f4a] rounded-3xl p-8 text-white shadow-2xl dashboard-card-enter ${mounted ? 'visible' : ''}`}
-                            style={{ transitionDelay: '400ms' }}
-                        >
-                            <div className="flex flex-col md:flex-row md:items-center gap-6">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center backdrop-blur-sm border border-white/20">
-                                        <TrendingUp size={28} className="text-amber-400" />
-                                    </div>
-                                    <div>
-                                        <h3 className="dashboard-title text-xl font-semibold">Progreso Académico</h3>
-                                        <p className="text-slate-300 text-sm mt-1">Semestre actual</p>
-                                    </div>
-                                </div>
-                                
-                                <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div>
-                                        <div className="flex justify-between text-sm mb-2">
-                                            <span className="text-slate-300">Créditos cursados</span>
-                                            <span className="text-white font-medium">
-                                                {progreso.creditos_cursados}/{progreso.creditos_totales}
-                                            </span>
-                                        </div>
-                                        <div className="h-3 bg-white/10 rounded-full overflow-hidden backdrop-blur-sm">
-                                            <div
-                                                className="progress-bar h-full bg-gradient-to-r from-amber-500 to-amber-400 rounded-full relative"
-                                                style={{ width: `${(progreso.creditos_cursados / progreso.creditos_totales) * 100}%` }}
-                                            >
-                                                <div className="absolute inset-0 bg-white/20 animate-pulse"></div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div className="flex justify-between text-sm mb-2">
-                                            <span className="text-slate-300">Evaluaciones completadas</span>
-                                            <span className="text-white font-medium">
-                                                {evaluacionesTurnedIn}/{evaluacionesTurnedIn + evaluacionesNoTurnedIn}
-                                            </span>
-                                        </div>
-                                        <div className="h-3 bg-white/10 rounded-full overflow-hidden backdrop-blur-sm">
-                                            <div
-                                                className="progress-bar h-full bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-full relative"
-                                                style={{
-                                                    width: `${((evaluacionesTurnedIn) / (evaluacionesTurnedIn + evaluacionesNoTurnedIn || 1)) * 100}%`
-                                                }}
-                                            >
-                                                <div className="absolute inset-0 bg-white/20 animate-pulse"></div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
                 </div>
             </div>
+
+            {/* ── MODAL TURN IN ── */}
+            <TurnIn
+                evaluacion={turnInTarget?.evaluacion ?? null}
+                entrega={turnInTarget?.entrega}
+                isOpen={turnInTarget !== null}
+                onClose={() => setTurnInTarget(null)}
+            />
         </AppLayout>
     );
 }

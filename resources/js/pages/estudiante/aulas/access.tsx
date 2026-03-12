@@ -1,6 +1,6 @@
 import { Head, router } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
-import TurnIn from '@/pages/estudiante/evaluaciones/turn_in'; // ajusta el path según tu estructura
+import TurnIn from '@/pages/estudiante/evaluaciones/turn_in';
 
 import {
     BookOpen,
@@ -359,7 +359,7 @@ export default function AulaAccess({ aula, timeline }: Props) {
                                                                 </div>
                                                             )}
 
-                                                            {/* Botón de acción — abre el modal */}
+                                  
                                                             <div className="mt-4 flex justify-end">
                                                                 <button
                                                                     onClick={() => {
